@@ -1,0 +1,1 @@
+Replace the SVG poster files in this folder with JPG/WEBP first-frame posters if desired. The included SVGs are temporary visual fallbacks.
