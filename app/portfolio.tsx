@@ -1,3 +1,181 @@
+
+Loading older messages…
+User attachment
+I can see that this deployment also failed, but the screenshot cuts off the actual error message. I can only make out the red error banner at the top, not the reason.
+
+Don't change anything yet.
+
+Do this
+Click the “Inspect Deployment” button shown in your screenshot.
+
+That should open the deployment logs.
+
+Then scroll to the red error section and send me a screenshot where the actual error text is visible.
+
+I specifically need the lines around:
+
+Error:
+...
+Build failed
+...
+The previous problem was the missing app directory. Since you've now added it, this is likely a different build error, and guessing at it would be the traditional human approach to debugging. We'll read the actual error instead.
+
+User attachment
+Got it. This screenshot tells us something important: don't click Redeploy here.
+
+Vercel is saying:
+
+“A more recent Production Deployment has been created, so the one you are looking at cannot be redeployed anymore.”
+
+So you're looking at an older failed deployment. Vercel is being annoyingly literal.
+
+Do this now
+Click Cancel on that Redeploy popup.
+Go to Deployments at the top of Vercel.
+You should see your newest deployment at the top.
+Click that newest deployment.
+Click Logs.
+Find the red error section near the bottom.
+I need to see the actual error from the newest deployment, not this older one.
+
+What I'm looking for
+Something like:
+
+Error: ...
+or
+
+Module not found: ...
+or
+
+Couldn't find ...
+Take a screenshot of the red error lines and send it.
+
+Don't change anything in GitHub or Vercel yet. Once I see that error, I'll tell you exactly what needs fixing.
+
+User attachment
+This is good. It's working.
+
+The important part of your screenshot is:
+
+GET 200 /
+GET 200 /
+A 200 status means the website is successfully responding. So the Next.js build/deployment issue is fixed. Humanity survives another deployment.
+
+Do this now
+Go to the Deployment tab at the top, next to Logs.
+
+You should see the deployment marked Ready or Ready / Production.
+
+There should also be a domain similar to:
+
+gokul-ai-portfolio-ten.vercel.app
+Click that domain and open the website.
+
+What we're checking
+The site should load, but the videos may not play yet. That's expected because we haven't put the actual MP4 files into production storage.
+
+For now, check:
+
+Does the homepage load?
+Does the hero section appear?
+Does the scrolling work?
+Do the project sections appear?
+Are the poster/placeholder images showing?
+Open the Vercel URL and send me a screenshot of the actual website. Then we'll move on to the video files and make the portfolio actually look like the expensive thing we intended, rather than a beautifully deployed empty shell.
+
+User attachment
+There we go. The latest deployment is Ready. The earlier errors are now irrelevant.
+
+Your screenshot shows:
+
+Latest deployment: Ready
+Build time: 28s
+Environment: Production
+Branch: main
+Older deployments: also now showing Ready
+The original e6034cd deployment is the only failed one
+So the deployment is successfully live.
+
+Next step
+Click the top Ready deployment in the list.
+
+That will open the deployment details. Look for the .vercel.app URL and click it.
+
+It should open your actual portfolio website.
+
+Then check these 4 things
+Does the homepage load?
+Does the “I make ads with AI.” hero appear?
+Does scrolling/animation work?
+Do the project sections appear?
+The videos probably won't play yet, and that's expected. We haven't connected the actual MP4 files.
+
+Send me a screenshot of the actual website after clicking the Ready deployment, not the Vercel dashboard. Then we can move on to the video hosting.
+
+No
+Got it. I misunderstood what you meant by “No.”
+
+Tell me what you're seeing now, or send me a screenshot of the current screen. I’ll follow exactly what’s on your screen instead of making you click through another 14 layers of Vercel bureaucracy.
+
+User attachment
+
+Worked for 18s
+
+Yes, now we know the actual problem.
+
+The Vercel deployment itself is working. The website is crashing in the browser after loading. I checked the code that was in the project, and I found the likely culprit:
+
+require("@studio-freight/lenis")
+The original portfolio was trying to initialize Lenis from inside the client-side browser bundle. That's what's causing the “Application error: a client-side exception has occurred” screen.
+
+I’ve fixed the portfolio.tsx file by removing that problematic runtime initialization while keeping the GSAP animations and the rest of the design intact.
+
+Download the fixed file
+Download the fixed portfolio.tsx
+
+Now replace the file on GitHub
+Go to your GitHub repository:
+Alphagxz → gokul-ai-portfolio
+
+Open:
+
+app
+Click:
+portfolio.tsx
+
+Click the pencil/edit icon in the top-right.
+
+Select all the existing code and delete it.
+
+Open the downloaded portfolio.tsx file on your Mac.
+
+Copy all of its code.
+
+Paste it into GitHub.
+
+Scroll down to Commit changes.
+
+Use:
+
+Fix client-side runtime error
+Click Commit changes.
+Then
+Vercel should automatically detect the new GitHub commit and create a new Production deployment.
+
+Wait until it says:
+
+Ready
+
+Then open the new deployment URL.
+
+The important thing is don't touch the Vercel settings. The build is already working. We're fixing the browser runtime error, not rebuilding the whole thing because apparently that would be too merciful. 
+
+
+portfolio.tsx
+Code
+
+
+
  "use client";
 
 import { useEffect, useRef } from "react";
@@ -37,9 +215,9 @@ function Project({ p }: { p: typeof projects[number] }) {
 export default function Portfolio() {
   const showreel = useRef<HTMLVideoElement>(null);
   useEffect(() => {
-    const lenis = new (require("@studio-freight/lenis").default)({ lerp: 0.085, smoothWheel: true });
-    const raf = (time: number) => { lenis.raf(time); requestAnimationFrame(raf); };
-    requestAnimationFrame(raf);
+    // Use native scrolling for maximum Vercel/browser compatibility.
+    // The original version initialized Lenis through `require()` inside the
+    // client bundle, which can trigger a browser-side runtime exception.
     const ctx = gsap.context(() => {
       gsap.fromTo(".hero-title span", { yPercent: 120 }, { yPercent: 0, stagger: .08, duration: 1.2, ease: "power4.out" });
       gsap.utils.toArray<HTMLElement>(".reveal").forEach((el) => {
@@ -50,7 +228,7 @@ export default function Portfolio() {
       gsap.to(".hero-glow", { yPercent: 22, xPercent: -10, scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: 1 }});
       gsap.to(".showreel-frame", { scale: .88, borderRadius: 32, scrollTrigger: { trigger: ".showreel", start: "top top", end: "bottom bottom", scrub: 1 }});
     });
-    return () => { ctx.revert(); lenis.destroy(); };
+    return () => { ctx.revert(); };
   }, []);
 
   return (
@@ -117,3 +295,4 @@ export default function Portfolio() {
     </main>
   );
 }
+
