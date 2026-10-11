@@ -12,32 +12,36 @@ type PortfolioProject = {
   title: string;
   type: string;
   file: string;
-  poster: string;
+  src?: string;
+  poster?: string;
   size: "wide" | "tall";
   caseStudy?: CaseStudyDetails;
 };
 
 const projects: PortfolioProject[] = [
   {
-    title: "MoneyPilot", type: "AI UGC · Performance Advertising", file: "moneypilot.mp4", poster: "moneypilot.svg", size: "wide",
+    title: "MoneyPilot", type: "AI UGC · Performance Advertising", file: "moneypilot.mp4", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/money%20pilot%20v43.mp4", poster: "moneypilot.svg", size: "wide",
     caseStudy: { focus: "Performance-led financial product creative.", approach: "Creator-style short-form storytelling with a clear opening hook and concise product messaging.", tags: ["AI UGC", "Paid Social", "Hook-led Creative"] }
   },
   {
-    title: "Pet Project", type: "AI Animated Brand Film", file: "pet-project.mp4", poster: "pet-project.svg", size: "tall",
+    title: "Pet Project", type: "AI Animated Brand Film", file: "pet-project.mp4", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/pet%20project%20spa%20Animated.mp4", poster: "pet-project.svg", size: "tall",
     caseStudy: { focus: "A character-led animated brand film for a pet-care concept.", approach: "A playful visual world shaped through animated scenes, a clear narrative progression and a polished final edit.", tags: ["AI Animation", "Brand Film", "Storytelling"] }
   },
   {
-    title: "Cheater Scanner", type: "AI UGC · TikTok Creative", file: "cheater-scanner.mp4", poster: "cheater-scanner.svg", size: "tall",
+    title: "Cheater Scanner", type: "AI UGC · TikTok Creative", file: "cheater-scanner.mp4", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/cheaterscanner%20v22.mp4", poster: "cheater-scanner.svg", size: "tall",
     caseStudy: { focus: "Social-first advertising for an app-oriented service.", approach: "A vertical UGC format built around an immediate hook, a concise narrative and platform-native pacing.", tags: ["AI UGC", "TikTok", "App Advertising"] }
   },
   {
-    title: "Rumik AI", type: "AI UGC · App Advertising", file: "rumik.mp4", poster: "rumik.svg", size: "wide",
+    title: "Rumik AI", type: "AI UGC · App Advertising", file: "rumik.mp4", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/rumik%20ira.MP4", poster: "rumik.svg", size: "wide",
     caseStudy: { focus: "Creator-led creative for an AI app.", approach: "Short-form storytelling that introduces the product in a familiar social format and keeps the message focused.", tags: ["AI UGC", "AI Apps", "Performance Creative"] }
   },
-  { title: "Adukale", type: "AI Product Advertisement", file: "adukale.mp4", poster: "adukale.svg", size: "wide" },
-  { title: "Social Catfish", type: "AI UGC · TikTok Creative", file: "social-catfish.mp4", poster: "social-catfish.svg", size: "tall" },
-  { title: "TripSniper", type: "AI UGC · TikTok Creative", file: "tripsniper.mp4", poster: "tripsniper.svg", size: "tall" },
-  { title: "Cannazo", type: "AI Product Film", file: "cannazo.mp4", poster: "cannazo.svg", size: "wide" },
+  { title: "Adukale", type: "AI Product Advertisement", file: "adukale.mp4", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/Adukale%20Khara%20chakkli.mp4", poster: "adukale.svg", size: "wide" },
+  { title: "Social Catfish", type: "AI UGC · TikTok Creative", file: "social-catfish.mp4", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/Social%20catfish%20v1.mov", poster: "social-catfish.svg", size: "tall" },
+  { title: "TripSniper", type: "AI UGC · TikTok Creative", file: "tripsniper.mp4", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/Copy%20of%20Copy%20of%20Tripsniper%20AD%20Reel%204.mp4", poster: "tripsniper.svg", size: "tall" },
+  { title: "Cannazo", type: "AI Product Film", file: "cannazo.mp4", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/cannazo%20herovF.mp4", poster: "cannazo.svg", size: "wide" },
+  { title: "CardOutpost", type: "AI UGC · Social Creative", file: "cardoutpost.mp4", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/cardoutpost%202.mp4", size: "tall" },
+  { title: "Cheater Scanner · Variant", type: "AI UGC · Alternate Creative", file: "cheaterscanner-alt.mp4", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/cheaterscanner.mp4", poster: "cheater-scanner.svg", size: "tall" },
+  { title: "MoneyPilot · Variant", type: "AI UGC · Alternate Creative", file: "moneypilot-v65.mp4", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/moneypilot%20v65.mp4", poster: "moneypilot.svg", size: "wide" },
 ];
 
 function Project({ p }: { p: PortfolioProject }) {
@@ -45,7 +49,7 @@ function Project({ p }: { p: PortfolioProject }) {
   return (
     <article className={`project project--${p.size} ${p.caseStudy ? "project--case-study" : ""}`}>
       <div className="project-media">
-        <video ref={ref} src={`/videos/${p.file}`} poster={`/posters/${p.poster}`} muted loop playsInline preload="metadata"
+        <video ref={ref} src={p.src ?? `/videos/${p.file}`} poster={p.poster ? `/posters/${p.poster}` : undefined} muted loop playsInline preload="metadata"
           onPointerEnter={() => { if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) ref.current?.play().catch(()=>{}); }}
           onPointerLeave={() => { if (ref.current) { ref.current.pause(); ref.current.currentTime = 0; } }}
         />
