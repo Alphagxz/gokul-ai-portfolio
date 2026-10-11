@@ -115,6 +115,9 @@ function Project({ p }: { p: PortfolioProject }) {
 
 const showreelClips = [
   { title: "Cannazo", type: "AI PRODUCT FILM", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/cannazo%20herovF.mp4", poster: "cannazo.svg" },
+  { title: "Pet Project", type: "AI ANIMATED BRAND FILM", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/pet%20project%20spa%20Animated.mp4", poster: "pet-project.svg" },
+  { title: "Cheater Scanner", type: "AI UGC / SOCIAL AD", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/cheaterscanner%20v22.mp4", poster: "cheater-scanner.svg" },
+  { title: "Social Catfish", type: "AI UGC / SOCIAL AD", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/Social%20catfish%20v1.mov", poster: "social-catfish.svg" },
   { title: "TripSniper", type: "AI UGC / TRAVEL AD", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/Copy%20of%20Copy%20of%20Tripsniper%20AD%20Reel%204.mp4", poster: "tripsniper.svg" },
 ];
 
@@ -225,10 +228,10 @@ export default function Portfolio() {
         <div className="showreel-pin">
           <div className="showreel-heading">
             <div>
-              <p className="eyebrow">SELECTED WORK / 01—02</p>
+              <p className="eyebrow">SELECTED WORK / 01—05</p>
               <h2>Scroll through<br /><em>the reel.</em></h2>
             </div>
-            <p className="showreel-instruction">Two distinct vertical films, with a thumbnail for each. Use the player controls for sound and playback, then keep scrolling for the case studies.</p>
+            <p className="showreel-instruction">Five selected vertical films, each with its own thumbnail. Use the player controls for sound and playback, then keep scrolling for the case studies.</p>
           </div>
           <div className="showreel-track">
             {showreelClips.map((clip, i) => (
@@ -253,13 +256,13 @@ export default function Portfolio() {
                   />
                 </div>
                 <div className="showreel-slide-meta">
-                  <span>{String(i + 1).padStart(2, "0")} / 02 · {clip.type}</span>
+                  <span>{String(i + 1).padStart(2, "0")} / 05 · {clip.type}</span>
                   <strong>{clip.title}</strong>
                 </div>
               </article>
             ))}
           </div>
-          <div className="showreel-footer"><span>KEEP SCROLLING FOR CASE STUDIES</span><span>02 FILMS <b>↔</b></span></div>
+          <div className="showreel-footer"><span>KEEP SCROLLING FOR CASE STUDIES</span><span>05 FILMS <b>↔</b></span></div>
         </div>
       </section>
 
@@ -269,7 +272,7 @@ export default function Portfolio() {
         <div className="work-folder-wrap">
           <button className="work-folder-toggle" type="button" aria-expanded={workFolderOpen} onClick={() => setWorkFolderOpen((open) => !open)}>
             <span className="work-folder-icon" aria-hidden="true">▤</span>
-            <span className="work-folder-copy"><strong>Other work</strong><small>Additional cuts and selected projects · {otherWorks.length} videos</small></span>
+            <span className="work-folder-copy"><strong>Other work</strong><small>More selected projects and alternate cuts · {otherWorks.length} videos</small></span>
             <span className={`work-folder-arrow ${workFolderOpen ? "is-open" : ""}`} aria-hidden="true">↗</span>
           </button>
           {workFolderOpen && <div className="project-grid project-grid--folder">{otherWorks.map((p)=><Project key={p.title} p={p}/>)}</div>}
