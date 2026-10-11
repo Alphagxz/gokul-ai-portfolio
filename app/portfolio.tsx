@@ -80,7 +80,7 @@ export default function Portfolio() {
 
     const updateLenis = lenis ? (time: number) => lenis.raf(time * 1000) : null;
     if (lenis && updateLenis) {
-      lenis.on("scroll", ScrollTrigger.update);
+      lenis.on("scroll", () => ScrollTrigger.update());
       gsap.ticker.add(updateLenis);
       gsap.ticker.lagSmoothing(0);
       (window as Window & { __portfolioLenis?: typeof lenis }).__portfolioLenis = lenis;
