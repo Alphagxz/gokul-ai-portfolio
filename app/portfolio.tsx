@@ -232,7 +232,7 @@ export default function Portfolio() {
           </div>
           <div className="showreel-track">
             {showreelClips.map((clip, i) => (
-              <article className={`showreel-slide ${clip.landscape ? "showreel-slide--landscape" : ""}`} key={clip.title}>
+              <article className="showreel-slide" key={clip.title}>
                 <div className="showreel-video-frame">
                   <img className="showreel-poster" src={`/posters/${clip.poster}`} alt={`${clip.title} video thumbnail`} loading={i < 3 ? "eager" : "lazy"} />
                   <video
