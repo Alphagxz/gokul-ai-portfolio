@@ -124,6 +124,8 @@ const showreelClips = [
 export default function Portfolio() {
   const [workFolderOpen, setWorkFolderOpen] = useState(false);
   const [projectFormOpen, setProjectFormOpen] = useState(false);
+  const [sparksCaught, setSparksCaught] = useState(0);
+  const [sparkPosition, setSparkPosition] = useState({ x: 78, y: 28 });
 
   useEffect(() => {
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -135,6 +137,25 @@ export default function Portfolio() {
         });
         gsap.fromTo(".hero-copy > *:not(.hero-title), .hero-metrics > div", { y: 16, opacity: 0 }, {
           y: 0, opacity: 1, stagger: 0.06, duration: 0.65, ease: "power2.out", delay: 0.12
+        });
+        // Count the hero stats when they enter view, then leave the final values in place.
+        const metricTargets = [
+          { selector: '[data-metric="videos"]', value: 300, suffix: "+", decimals: 0 },
+          { selector: '[data-metric="years"]', value: 1.5, suffix: "+", decimals: 1 },
+          { selector: '[data-metric="brands"]', value: 15, suffix: "+", decimals: 0 },
+        ];
+        metricTargets.forEach(({ selector, value, suffix, decimals }) => {
+          const node = document.querySelector<HTMLElement>(selector);
+          if (!node) return;
+          const counter = { value: 0 };
+          gsap.to(counter, {
+            value,
+            duration: 1.65,
+            ease: "power2.out",
+            scrollTrigger: { trigger: ".hero-metrics", start: "top 86%", once: true },
+            onUpdate: () => { node.textContent = `${counter.value.toFixed(decimals)}${suffix}`; },
+            onComplete: () => { node.textContent = `${value.toFixed(decimals)}${suffix}`; },
+          });
         });
         gsap.utils.toArray<HTMLElement>(".reveal, .project").forEach((el) => {
           gsap.fromTo(el, { y: 24, opacity: 0 }, {
@@ -221,7 +242,35 @@ export default function Portfolio() {
           <p className="hero-sub">Generative video, AI UGC and performance creative for brands that need ideas to move faster.</p>
           <div className="hero-actions"><a className="primary" href="#work">Explore work ↓</a><a className="underlink" href="#showreel">Watch selected films ↘</a><button className="underlink hero-contact-trigger" type="button" onClick={() => setProjectFormOpen(true)}>Available globally ↗</button></div>
         </div>
-        <div className="hero-metrics"><div><strong>300+</strong><small>AI videos</small></div><div><strong>1.5+</strong><small>years with AI</small></div><div><strong>15+</strong><small>brands & clients</small></div></div>
+        <div className="hero-metrics" aria-label="Portfolio statistics">
+          <div className="hero-metric"><strong data-metric="videos">300+</strong><small>AI videos</small></div>
+          <div className="hero-metric"><strong data-metric="years">1.5+</strong><small>years with AI</small></div>
+          <div className="hero-metric"><strong data-metric="brands">15+</strong><small>brands &amp; clients</small></div>
+        </div>
+        <div className="spark-playground" aria-label="Hidden mini game: Catch the Spark">
+          <div className="spark-playground-copy"><span>TAKE A BREAK</span><strong>Catch the spark.</strong><small>Catch five sparks to unlock a tiny surprise.</small></div>
+          {sparksCaught < 5 ? (
+            <button
+              type="button"
+              className="spark-target"
+              style={{ left: `${sparkPosition.x}%`, top: `${sparkPosition.y}%` }}
+              onClick={() => {
+                setSparksCaught((current) => Math.min(5, current + 1));
+                setSparkPosition((current) => ({
+                  x: [18, 72, 45, 84, 30, 60][(sparksCaught + 1) % 6],
+                  y: [30, 72, 18, 54, 82, 40][(sparksCaught + 2) % 6],
+                }));
+              }}
+              aria-label={`Catch spark, ${sparksCaught} of 5 caught`}
+              title="Catch the spark"
+            ><span aria-hidden="true">✳</span></button>
+          ) : (
+            <button type="button" className="spark-win" onClick={() => { setSparksCaught(0); setSparkPosition({ x: 78, y: 28 }); }}>
+              <span aria-hidden="true">✦</span><strong>Spark captured.</strong><small>Play again ↗</small>
+            </button>
+          )}
+          <span className="spark-score" aria-live="polite">{String(sparksCaught).padStart(2, "0")} <i>/ 05</i></span>
+        </div>
       </section>
 
       <section className="showreel" id="showreel" aria-label="Selected video work">
