@@ -1,6 +1,6 @@
  "use client";
 
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -45,41 +45,32 @@ const otherWorks: PortfolioProject[] = [
 
 function Project({ p }: { p: PortfolioProject }) {
   const ref = useRef<HTMLVideoElement>(null);
-  const [ready, setReady] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
+  const [videoVisible, setVideoVisible] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [playError, setPlayError] = useState(false);
+  const isCaseStudy = Boolean(p.caseStudy);
+  const projectIndex = isCaseStudy ? String(projects.indexOf(p) + 1).padStart(2, "0") : "↗";
 
-  useEffect(() => {
+  const startPlayback = () => {
     const video = ref.current;
-    if (!video) return;
-    const observer = new IntersectionObserver((entries) => {
-      for (const entry of entries) {
-        if (entry.isIntersecting) {
-          if (!video.src) {
-            video.src = p.src ?? `/videos/${p.file}`;
-            video.load();
-          }
-        } else if (!video.paused) {
-          video.pause();
-        }
-      }
-    }, { rootMargin: "240px 0px", threshold: 0.01 });
-    observer.observe(video);
-    const onReady = () => setReady(true);
-    const onError = () => setReady(false);
-    video.addEventListener("loadeddata", onReady);
-    video.addEventListener("canplay", onReady);
-    video.addEventListener("error", onError);
-    return () => {
-      observer.disconnect();
-      video.removeEventListener("loadeddata", onReady);
-      video.removeEventListener("canplay", onReady);
-      video.removeEventListener("error", onError);
-      video.pause();
-    };
-  }, [p.file, p.src]);
+    if (!video || !p.src) return;
+    setPlayError(false);
+    setHasStarted(true);
+    video.controls = true;
+    if (!video.src || video.src !== p.src) video.src = p.src;
+    const attempt = video.play();
+    if (attempt && typeof attempt.catch === "function") {
+      attempt.catch(() => {
+        setIsPlaying(false);
+        setPlayError(true);
+      });
+    }
+  };
 
   return (
-    <article className={`project project--${p.size} ${p.caseStudy ? "project--case-study" : ""}`}>
-      <div className={`project-media ${ready ? "is-ready" : "is-pending"}`}>
+    <article className={`project project--${p.size} ${isCaseStudy ? "project--case-study" : ""}`}>
+      <div className={`project-media${videoVisible && !playError ? " is-video-visible" : ""}${isPlaying ? " is-playing" : ""}${playError ? " has-error" : ""}`}>
         <div className="project-placeholder" aria-hidden="true">
           <span className="placeholder-kicker">AI FILM / SELECTED WORK</span>
           <strong>{p.title}</strong>
@@ -90,18 +81,30 @@ function Project({ p }: { p: PortfolioProject }) {
         <video
           ref={ref}
           data-video-src={p.src ?? `/videos/${p.file}`}
-          poster={p.poster ? `/poster/${p.poster}` : undefined}
-          controls
+          controls={hasStarted}
           playsInline
           preload="none"
           aria-label={`${p.title} video. Use the video controls to play, pause, and adjust sound.`}
-          onPlay={() => setReady(true)}
+          onLoadedData={() => { setVideoVisible(true); setPlayError(false); }}
+          onCanPlay={() => setPlayError(false)}
+          onPlaying={() => { setVideoVisible(true); setIsPlaying(true); setPlayError(false); }}
+          onPause={() => setIsPlaying(false)}
+          onError={() => { setIsPlaying(false); setVideoVisible(false); setPlayError(true); }}
         />
         <div className="project-shade" aria-hidden="true" />
-        <span className="project-type">{p.caseStudy ? "CASE STUDY · " : ""}{p.type}</span>
-        <span className="project-index">{p.caseStudy ? String(projects.indexOf(p) + 1).padStart(2, "0") : "↗"}</span>
+        <span className="project-type">{isCaseStudy ? "CASE STUDY" : "SELECTED WORK"}</span>
+        <span className="project-index">{projectIndex}</span>
+        <div className={`project-title-overlay${isPlaying ? " is-hidden" : ""}`}>
+          <span className="project-overlay-index">{isCaseStudy ? `FEATURED CASE STUDY · ${projectIndex}` : "MORE SELECTED WORK"}</span>
+          <strong>{p.title}</strong>
+          <span className="project-overlay-type">{p.type}</span>
+          <button className="project-center-play" type="button" onClick={startPlayback} aria-label={`${playError ? "Retry" : "Play"} ${p.title}`}>
+            <span aria-hidden="true">{playError ? "↻" : "▶"}</span>
+          </button>
+          <small className="project-play-label">{playError ? "COULDN’T LOAD · TRY AGAIN" : isPlaying ? "PAUSE FILM" : "PLAY FILM"}</small>
+        </div>
       </div>
-      <div className="project-caption"><h3>{p.title}</h3><span>{p.caseStudy ? "Featured case study ↗" : "Selected work ↗"}</span></div>
+      <div className="project-caption"><h3>{p.title}</h3><span>{isCaseStudy ? "Featured case study ↗" : "Selected work ↗"}</span></div>
       {p.caseStudy && (
         <div className="project-case-study">
           <div><span className="case-label">CREATIVE FOCUS</span><p>{p.caseStudy.focus}</p></div>
@@ -177,67 +180,284 @@ function ShowreelCard({ clip, index }: { clip: ShowreelClip; index: number }) {
 }
 
 type GooPosition = { x: number; y: number };
-type GooDrag = { index: number; pointerId: number; startX: number; startY: number; originX: number; originY: number };
+type JellyForce = {
+  press: number;
+  pressTarget: number;
+  dragX: number;
+  dragY: number;
+  dragXTarget: number;
+  dragYTarget: number;
+  contactAngle: number;
+  contactStrength: number;
+  contactTarget: number;
+  splash: number;
+  phase: number;
+};
+type JellySplashStyle = CSSProperties & { "--splash-angle": string; "--splash-distance": string };
+type JellyDrag = {
+  pointerId: number;
+  startClientX: number;
+  startClientY: number;
+  startPosition: GooPosition;
+};
+type JellyToyProps = {
+  index: number;
+  position: GooPosition;
+  stageRef: { current: HTMLDivElement | null };
+  onPositionChange: (index: number, position: GooPosition) => void;
+  soundEnabled: boolean;
+  playSound: (kind: "squish" | "pop") => void;
+};
+
+function buildJellyPath(force: JellyForce, time: number, variant: number) {
+  const points: Array<{ x: number; y: number }> = [];
+  const count = 42;
+  const center = 90;
+  const radius = variant === 0 ? 58 : 47;
+  const dragMagnitude = Math.min(1.15, Math.hypot(force.dragX, force.dragY));
+  const dragAngle = Math.atan2(force.dragY, force.dragX);
+  const phase = force.phase;
+  for (let i = 0; i < count; i++) {
+    const angle = (i / count) * Math.PI * 2;
+    const contactDistance = Math.atan2(Math.sin(angle - force.contactAngle), Math.cos(angle - force.contactAngle));
+    const localDent = -0.25 * force.contactStrength * Math.exp(-Math.pow(contactDistance / 0.36, 2));
+    const nearbyBulgeA = 0.105 * force.contactStrength * Math.exp(-Math.pow((contactDistance - 0.60) / 0.26, 2));
+    const nearbyBulgeB = 0.105 * force.contactStrength * Math.exp(-Math.pow((contactDistance + 0.60) / 0.26, 2));
+    const elasticStretch = dragMagnitude * (0.34 * Math.cos(angle - dragAngle) - 0.08 * Math.cos(2 * (angle - dragAngle)));
+    const radialPulse = force.splash * (0.075 * Math.sin(angle * 7 + time * 0.018 + phase) + 0.038 * Math.sin(angle * 11 - time * 0.022));
+    const idleWobble = 0.024 * Math.sin(angle * 3 + time * 0.0018 + phase) + 0.014 * Math.sin(angle * 5 - time * 0.0013 + phase * 1.7);
+    const pressedFill = force.press * 0.075;
+    const r = radius * (1 + idleWobble + elasticStretch + localDent + nearbyBulgeA + nearbyBulgeB + radialPulse + pressedFill);
+    const squashX = 1 + force.press * 0.10 + force.contactStrength * 0.035;
+    const squashY = 1 - force.press * 0.105 + force.contactStrength * 0.025;
+    points.push({
+      x: center + Math.cos(angle) * r * squashX,
+      y: center + Math.sin(angle) * r * squashY,
+    });
+  }
+  const midpoint = (a: { x: number; y: number }, b: { x: number; y: number }) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+  let d = "";
+  const firstMid = midpoint(points[count - 1], points[0]);
+  d = `M ${firstMid.x.toFixed(2)} ${firstMid.y.toFixed(2)} `;
+  for (let i = 0; i < count; i++) {
+    const nextMid = midpoint(points[i], points[(i + 1) % count]);
+    d += `Q ${points[i].x.toFixed(2)} ${points[i].y.toFixed(2)} ${nextMid.x.toFixed(2)} ${nextMid.y.toFixed(2)} `;
+  }
+  return `${d}Z`;
+}
+
+function JellyToy({ index, position, stageRef, onPositionChange, soundEnabled, playSound }: JellyToyProps) {
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const shapeRef = useRef<SVGPathElement | null>(null);
+  const sheenRef = useRef<SVGPathElement | null>(null);
+  const clipShapeRef = useRef<SVGPathElement | null>(null);
+  const dragRef = useRef<JellyDrag | null>(null);
+  const frameRef = useRef<number | null>(null);
+  const loopRef = useRef<(() => void) | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [splashKey, setSplashKey] = useState(0);
+  const forceRef = useRef<JellyForce>({
+    press: 0, pressTarget: 0,
+    dragX: 0, dragY: 0, dragXTarget: 0, dragYTarget: 0,
+    contactAngle: -Math.PI / 3, contactStrength: 0, contactTarget: 0,
+    splash: 0, phase: index * 1.7 + 0.4,
+  });
+
+  useEffect(() => {
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let running = true;
+    let localFrame = 0;
+    const tick = (now: number) => {
+      if (!running) return;
+      const f = forceRef.current;
+      f.press += (f.pressTarget - f.press) * 0.19;
+      f.dragX += (f.dragXTarget - f.dragX) * 0.17;
+      f.dragY += (f.dragYTarget - f.dragY) * 0.17;
+      f.contactStrength += (f.contactTarget - f.contactStrength) * 0.16;
+      if (!dragRef.current) f.splash *= 0.91;
+      if (f.splash < 0.003) f.splash = 0;
+      const nextPath = buildJellyPath(f, now, index);
+      if (shapeRef.current) shapeRef.current.setAttribute("d", nextPath);
+      if (sheenRef.current) sheenRef.current.setAttribute("d", nextPath);
+      if (clipShapeRef.current) clipShapeRef.current.setAttribute("d", nextPath);
+      const active = Boolean(dragRef.current) || f.splash > 0.003 || f.press > 0.005 || Math.abs(f.dragX) > 0.005 || Math.abs(f.dragY) > 0.005 || f.contactStrength > 0.005;
+      if (!reducedMotion || active) {
+        localFrame = window.requestAnimationFrame(tick);
+        frameRef.current = localFrame;
+      } else {
+        frameRef.current = null;
+      }
+    };
+    loopRef.current = () => {
+      if (frameRef.current === null) frameRef.current = window.requestAnimationFrame(tick);
+    };
+    loopRef.current();
+    return () => {
+      running = false;
+      if (frameRef.current !== null) window.cancelAnimationFrame(frameRef.current);
+      loopRef.current = null;
+    };
+  }, [index]);
+
+  const startPress = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    const target = event.currentTarget;
+    const rect = target.getBoundingClientRect();
+    const localX = ((event.clientX - rect.left) / Math.max(rect.width, 1)) * 180 - 90;
+    const localY = ((event.clientY - rect.top) / Math.max(rect.height, 1)) * 180 - 90;
+    const f = forceRef.current;
+    f.contactAngle = Math.atan2(localY, localX);
+    f.pressTarget = 1;
+    f.contactTarget = 1;
+    f.splash = 0.34;
+    loopRef.current?.();
+    dragRef.current = {
+      pointerId: event.pointerId,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      startPosition: position,
+    };
+    setIsDragging(true);
+    setSplashKey((value) => value + 1);
+    target.setPointerCapture(event.pointerId);
+    if (soundEnabled) playSound("squish");
+  };
+
+  const movePress = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    const drag = dragRef.current;
+    const stage = stageRef.current;
+    if (!drag || drag.pointerId !== event.pointerId || !stage) return;
+    const bounds = stage.getBoundingClientRect();
+    if (!bounds.width || !bounds.height) return;
+    const dx = event.clientX - drag.startClientX;
+    const dy = event.clientY - drag.startClientY;
+    onPositionChange(index, {
+      x: Math.max(8, Math.min(92, drag.startPosition.x + (dx / bounds.width) * 100)),
+      y: Math.max(12, Math.min(88, drag.startPosition.y + (dy / bounds.height) * 100)),
+    });
+    const f = forceRef.current;
+    f.dragXTarget = Math.max(-1.15, Math.min(1.15, dx / 95));
+    f.dragYTarget = Math.max(-1.15, Math.min(1.15, dy / 95));
+    f.pressTarget = 0.58;
+    f.contactTarget = 0.58;
+    const rect = event.currentTarget.getBoundingClientRect();
+    const localX = ((event.clientX - rect.left) / Math.max(rect.width, 1)) * 180 - 90;
+    const localY = ((event.clientY - rect.top) / Math.max(rect.height, 1)) * 180 - 90;
+    f.contactAngle = Math.atan2(localY, localX);
+    loopRef.current?.();
+  };
+
+  const endPress = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    dragRef.current = null;
+    const f = forceRef.current;
+    f.pressTarget = 0;
+    f.contactTarget = 0;
+    f.dragXTarget = 0;
+    f.dragYTarget = 0;
+    f.splash = 1;
+    setIsDragging(false);
+    setSplashKey((value) => value + 1);
+    loopRef.current?.();
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+    if (soundEnabled) playSound("pop");
+  };
+
+  const style = { left: `${position.x}%`, top: `${position.y}%`, zIndex: isDragging ? 8 : 4 } as CSSProperties;
+  const colorName = index === 0 ? "violet" : "pearl";
+  return (
+    <button
+      ref={buttonRef}
+      type="button"
+      className={`jelly-toy jelly-toy--${colorName}${isDragging ? " is-dragging" : ""}`}
+      style={style}
+      aria-label={index === 0 ? "Grab, press, stretch and release the violet jelly toy" : "Grab, press, stretch and release the iridescent jelly toy"}
+      onPointerDown={startPress}
+      onPointerMove={movePress}
+      onPointerUp={endPress}
+      onPointerCancel={endPress}
+      onLostPointerCapture={(event) => { if (dragRef.current?.pointerId === event.pointerId) endPress(event); }}
+    >
+      <svg className="jelly-shape" viewBox="0 0 180 180" aria-hidden="true" focusable="false">
+        <defs>
+          <radialGradient id={`jelly-fill-${index}`} cx="28%" cy="20%" r="80%">
+            {index === 0 ? <><stop offset="0%" stopColor="#fff8ff"/><stop offset="13%" stopColor="#e6ceff"/><stop offset="35%" stopColor="#a57bff"/><stop offset="68%" stopColor="#6443bd"/><stop offset="100%" stopColor="#261641"/></> : <><stop offset="0%" stopColor="#ffffff"/><stop offset="15%" stopColor="#e7fbff"/><stop offset="35%" stopColor="#9ed8ff"/><stop offset="58%" stopColor="#b49aff"/><stop offset="80%" stopColor="#6e4dbe"/><stop offset="100%" stopColor="#1d193c"/></>}
+          </radialGradient>
+          <linearGradient id={`jelly-sheen-${index}`} x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#ffffff" stopOpacity=".66"/><stop offset="45%" stopColor="#ffffff" stopOpacity=".05"/><stop offset="70%" stopColor={index === 0 ? "#d7bdff" : "#a4efff"} stopOpacity=".22"/><stop offset="100%" stopColor="#ffffff" stopOpacity="0"/>
+          </linearGradient>
+          <filter id={`jelly-shadow-${index}`} x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="5"/></filter>
+          <clipPath id={`jelly-clip-${index}`}><path ref={clipShapeRef} d={buildJellyPath(forceRef.current, 0, index)} /></clipPath>
+        </defs>
+        <ellipse className="jelly-shadow" cx="91" cy="153" rx={index === 0 ? "45" : "36"} ry="8" fill="#05040b" opacity=".38" filter={`url(#jelly-shadow-${index})`} />
+        <path ref={shapeRef} className="jelly-body-path" d={buildJellyPath(forceRef.current, 0, index)} fill={`url(#jelly-fill-${index})`} />
+        <path ref={sheenRef} className="jelly-surface-sheen" d={buildJellyPath(forceRef.current, 0, index)} fill={`url(#jelly-sheen-${index})`} />
+        <g clipPath={`url(#jelly-clip-${index})`}>
+          <ellipse className="jelly-highlight jelly-highlight--main" cx="64" cy="44" rx={index === 0 ? "18" : "15"} ry="7" transform="rotate(-32 64 44)" />
+          <ellipse className="jelly-highlight jelly-highlight--small" cx="112" cy="62" rx="5" ry="10" transform="rotate(28 112 62)" />
+          <path className="jelly-light-ribbon" d="M48 70 Q38 98 62 120" fill="none" stroke="#fff" strokeOpacity=".30" strokeWidth="2.2" strokeLinecap="round" />
+        </g>
+      </svg>
+      <span className={`jelly-splash${splashKey > 0 ? " is-active" : ""}`} key={splashKey} aria-hidden="true">
+        {Array.from({ length: 7 }, (_, i) => <i key={i} style={{ "--splash-angle": `${(360 / 7) * i}deg`, "--splash-distance": `${index === 0 ? 44 + (i % 3) * 7 : 35 + (i % 3) * 6}px` } as JellySplashStyle} />)}
+      </span>
+      <span className={`jelly-ripple${splashKey > 0 ? " is-active" : ""}`} key={`ripple-${splashKey}`} aria-hidden="true" />
+    </button>
+  );
+}
 
 export default function Portfolio() {
   const [workFolderOpen, setWorkFolderOpen] = useState(false);
   const [projectFormOpen, setProjectFormOpen] = useState(false);
   const [gooPositions, setGooPositions] = useState<GooPosition[]>([
     { x: 83, y: 39 },
-    { x: 76, y: 64 },
+    { x: 75, y: 66 },
   ]);
-  const [draggingGoo, setDraggingGoo] = useState<number | null>(null);
-  const [gooTension, setGooTension] = useState<{ angle: number; stretch: number } | null>(null);
+  const [jellySoundEnabled, setJellySoundEnabled] = useState(false);
   const gooPlaygroundRef = useRef<HTMLDivElement | null>(null);
-  const gooDragRef = useRef<GooDrag | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
 
-  const handleGooPointerDown = (event: ReactPointerEvent<HTMLButtonElement>, index: number) => {
-    event.preventDefault();
-    const pos = gooPositions[index];
-    if (!pos) return;
-    gooDragRef.current = {
-      index,
-      pointerId: event.pointerId,
-      startX: event.clientX,
-      startY: event.clientY,
-      originX: pos.x,
-      originY: pos.y,
-    };
-    setDraggingGoo(index);
-    setGooTension({ angle: 0, stretch: 1.12 });
-    event.currentTarget.setPointerCapture(event.pointerId);
-  };
-
-  const handleGooPointerMove = (event: ReactPointerEvent<HTMLButtonElement>, index: number) => {
-    const drag = gooDragRef.current;
-    const stage = gooPlaygroundRef.current;
-    if (!drag || drag.index !== index || drag.pointerId !== event.pointerId || !stage) return;
-    const bounds = stage.getBoundingClientRect();
-    if (!bounds.width || !bounds.height) return;
-    const dx = event.clientX - drag.startX;
-    const dy = event.clientY - drag.startY;
-    const nextX = Math.max(5, Math.min(95, drag.originX + (dx / bounds.width) * 100));
-    const nextY = Math.max(7, Math.min(93, drag.originY + (dy / bounds.height) * 100));
-    setGooPositions((current) => current.map((position, i) => i === index ? { x: nextX, y: nextY } : position));
-    const distance = Math.hypot(dx, dy);
-    setGooTension({ angle: Math.atan2(dy, dx) * (180 / Math.PI), stretch: 1 + Math.min(distance / 230, 0.62) });
-  };
-
-  const handleGooPointerUp = (event: ReactPointerEvent<HTMLButtonElement>, index: number) => {
-    const drag = gooDragRef.current;
-    if (!drag || drag.index !== index || drag.pointerId !== event.pointerId) return;
-    gooDragRef.current = null;
-    setDraggingGoo(null);
-    setGooTension(null);
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
+  const playJellySound = (kind: "squish" | "pop") => {
+    if (!jellySoundEnabled || typeof window === "undefined") return;
+    try {
+      const AudioContextClass = window.AudioContext;
+      if (!AudioContextClass) return;
+      const context = audioContextRef.current ?? new AudioContextClass();
+      audioContextRef.current = context;
+      if (context.state === "suspended") void context.resume();
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      const now = context.currentTime;
+      const duration = kind === "squish" ? 0.17 : 0.12;
+      oscillator.type = kind === "squish" ? "sine" : "triangle";
+      oscillator.frequency.setValueAtTime(kind === "squish" ? 148 : 270, now);
+      oscillator.frequency.exponentialRampToValueAtTime(kind === "squish" ? 58 : 470, now + duration * 0.82);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(kind === "squish" ? 0.034 : 0.026, now + 0.012);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+      oscillator.start(now);
+      oscillator.stop(now + duration + 0.015);
+    } catch {
+      // The toy remains fully usable when audio is unsupported or unavailable.
     }
+  };
+
+  const updateGooPosition = (index: number, next: GooPosition) => {
+    setGooPositions((current) => current.map((position, i) => i === index ? next : position));
   };
 
   useEffect(() => {
     if (window.matchMedia("(max-width: 850px)").matches) {
-      setGooPositions([{ x: 70, y: 31 }, { x: 31, y: 69 }]);
+      setGooPositions([{ x: 31, y: 36 }, { x: 72, y: 68 }]);
     }
+    return () => {
+      if (audioContextRef.current && audioContextRef.current.state !== "closed") {
+        void audioContextRef.current.close();
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -362,42 +582,24 @@ export default function Portfolio() {
           <div className="hero-metric"><strong data-metric="years">1.5+</strong><small>years with AI</small></div>
           <div className="hero-metric"><strong data-metric="brands">15+</strong><small>brands &amp; clients</small></div>
         </div>
-        <div className="goo-playground" ref={gooPlaygroundRef} aria-label="Two interactive, draggable slime toys">
+        <div className="goo-playground" ref={gooPlaygroundRef} aria-label="Two interactive, draggable jelly toys">
           {gooPositions.map((position, index) => (
-            <button
+            <JellyToy
               key={index}
-              type="button"
-              className={`goo-toy goo-toy--${index === 0 ? "violet" : "pearl"}${draggingGoo === index ? " is-dragging" : ""}`}
-              style={{
-                left: `${position.x}%`,
-                top: `${position.y}%`,
-                zIndex: draggingGoo === index ? 8 : 4,
-              }}
-              aria-label={index === 0 ? "Drag and squish the violet slime toy" : "Drag and squish the iridescent slime toy"}
-              onPointerDown={(event) => handleGooPointerDown(event, index)}
-              onPointerMove={(event) => handleGooPointerMove(event, index)}
-              onPointerUp={(event) => handleGooPointerUp(event, index)}
-              onPointerCancel={(event) => handleGooPointerUp(event, index)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault();
-                  setDraggingGoo(index);
-                  setGooTension({ angle: 0, stretch: 1.23 });
-                }
-              }}
-              onKeyUp={() => { setDraggingGoo(null); setGooTension(null); }}
-            >
-              <span
-                className="goo-toy-body"
-                style={{ transform: draggingGoo === index && gooTension ? `rotate(${gooTension.angle}deg) scaleX(${gooTension.stretch}) scaleY(${1 / gooTension.stretch})` : undefined }}
-              >
-                <span className="goo-toy-gloss goo-toy-gloss--one" />
-                <span className="goo-toy-gloss goo-toy-gloss--two" />
-                <span className="goo-toy-core" />
-              </span>
-            </button>
+              index={index}
+              position={position}
+              stageRef={gooPlaygroundRef}
+              onPositionChange={updateGooPosition}
+              soundEnabled={jellySoundEnabled}
+              playSound={playJellySound}
+            />
           ))}
-          <span className="goo-playground-hint" aria-hidden="true">GRAB IT · PULL IT · LET IT GO</span>
+          <div className="goo-playground-note">
+            <span className="goo-playground-hint" aria-hidden="true">GRAB · SQUISH · STRETCH · RELEASE</span>
+            <button className="goo-sound-toggle" type="button" aria-pressed={jellySoundEnabled} onClick={() => setJellySoundEnabled((enabled) => !enabled)}>
+              <span aria-hidden="true">{jellySoundEnabled ? "♪" : "♫"}</span> SOUND {jellySoundEnabled ? "ON" : "OFF"}
+            </button>
+          </div>
         </div>
       </section>
 
