@@ -86,6 +86,10 @@ export default function Portfolio() {
       (window as Window & { __portfolioLenis?: typeof lenis }).__portfolioLenis = lenis;
     }
 
+    // Keep native event-listener cleanup outside the GSAP context callback.
+    // The context callback runs immediately, so calling ctx.add() inside it
+    // would access `ctx` before the const assignment has completed.
+    let cleanupPointer = () => {};
     const ctx = gsap.context(() => {
       if (!reduceMotion) {
         gsap.fromTo(
@@ -159,10 +163,10 @@ export default function Portfolio() {
           const onLeave = () => { glow.style.opacity = "0"; };
           window.addEventListener("pointermove", onMove, { passive: true });
           document.documentElement.addEventListener("pointerleave", onLeave);
-          ctx.add(() => {
+          cleanupPointer = () => {
             window.removeEventListener("pointermove", onMove);
             document.documentElement.removeEventListener("pointerleave", onLeave);
-          });
+          };
         }
       } else {
         gsap.set(".hero-title span", { y: 0, opacity: 1, rotateX: 0 });
@@ -175,6 +179,7 @@ export default function Portfolio() {
     requestAnimationFrame(() => ScrollTrigger.refresh());
 
     return () => {
+      cleanupPointer();
       ctx.revert();
       if (lenis && updateLenis) {
         gsap.ticker.remove(updateLenis);
