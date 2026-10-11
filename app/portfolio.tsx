@@ -34,13 +34,13 @@ const projects: PortfolioProject[] = [
     title: "Rumik AI", type: "AI UGC · App Advertising", file: "rumik.mp4", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/rumik%20ira.MP4", poster: "rumik.svg", size: "tall",
     caseStudy: { focus: "Creator-led creative for an AI app.", approach: "Short-form storytelling that introduces the product in a familiar social format and keeps the message focused.", tags: ["AI UGC", "AI Apps", "Performance Creative"] }
   },
+];
+
+const otherWorks: PortfolioProject[] = [
   { title: "Adukale", type: "AI Product Advertisement", file: "adukale.mp4", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/Adukale%20Khara%20chakkli.mp4", poster: "adukale.svg", size: "wide" },
-  { title: "Social Catfish", type: "AI UGC · TikTok Creative", file: "social-catfish.mp4", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/Social%20catfish%20v1.mov", poster: "social-catfish.svg", size: "tall" },
-  { title: "TripSniper", type: "AI UGC · TikTok Creative", file: "tripsniper.mp4", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/Copy%20of%20Copy%20of%20Tripsniper%20AD%20Reel%204.mp4", poster: "tripsniper.svg", size: "tall" },
-  { title: "Cannazo", type: "AI Product Film", file: "cannazo.mp4", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/cannazo%20herovF.mp4", poster: "cannazo.svg", size: "tall" },
-  { title: "CardOutpost", type: "AI UGC · Social Creative", file: "cardoutpost.mp4", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/cardoutpost%202.mp4", size: "tall" },
-  { title: "Cheater Scanner · Variant", type: "AI UGC · Alternate Creative", file: "cheaterscanner-alt.mp4", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/cheaterscanner.mp4", poster: "cheater-scanner.svg", size: "tall" },
-  { title: "MoneyPilot · Variant", type: "AI UGC · Alternate Creative", file: "moneypilot-v65.mp4", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/moneypilot%20v65.mp4", poster: "moneypilot.svg", size: "tall" },
+  { title: "CardOutpost", type: "AI UGC · Social Creative", file: "cardoutpost.mp4", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/cardoutpost%202.mp4", poster: "cardoutpost.svg", size: "tall" },
+  { title: "MoneyPilot · Alternate Cut", type: "AI UGC · Alternate Creative", file: "moneypilot-v65.mp4", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/moneypilot%20v65.mp4", poster: "moneypilot-alt.svg", size: "tall" },
+  { title: "Cheater Scanner · Alternate Cut", type: "AI UGC · Alternate Creative", file: "cheaterscanner-alt.mp4", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/cheaterscanner.mp4", poster: "cheater-scanner-alt.svg", size: "tall" },
 ];
 
 function Project({ p }: { p: PortfolioProject }) {
@@ -86,9 +86,11 @@ function Project({ p }: { p: PortfolioProject }) {
           <span className="placeholder-type">{p.type}</span>
           <span className="placeholder-mark">G<span>·</span></span>
         </div>
+        {p.poster && <img className="project-poster" src={`/posters/${p.poster}`} alt={`${p.title} video thumbnail`} loading="lazy" />}
         <video
           ref={ref}
           data-video-src={p.src ?? `/videos/${p.file}`}
+          poster={p.poster ? `/posters/${p.poster}` : undefined}
           controls
           playsInline
           preload="none"
@@ -97,7 +99,7 @@ function Project({ p }: { p: PortfolioProject }) {
         />
         <div className="project-shade" aria-hidden="true" />
         <span className="project-type">{p.caseStudy ? "CASE STUDY · " : ""}{p.type}</span>
-        <span className="project-index">{String(projects.indexOf(p) + 1).padStart(2, "0")}</span>
+        <span className="project-index">{p.caseStudy ? String(projects.indexOf(p) + 1).padStart(2, "0") : "↗"}</span>
       </div>
       <div className="project-caption"><h3>{p.title}</h3><span>{p.caseStudy ? "Featured case study ↗" : "Selected work ↗"}</span></div>
       {p.caseStudy && (
@@ -112,17 +114,14 @@ function Project({ p }: { p: PortfolioProject }) {
 }
 
 const showreelClips = [
-  { title: "Cannazo", type: "AI PRODUCT FILM", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/cannazo%20herovF.mp4", landscape: true },
-  { title: "Pet Project", type: "ANIMATED BRAND FILM", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/pet%20project%20spa%20Animated.mp4" },
-  { title: "Cheater Scanner", type: "AI UGC / TIKTOK", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/cheaterscanner%20v22.mp4" },
-  { title: "Rumik AI", type: "APP ADVERTISING", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/rumik%20ira.MP4" },
-  { title: "Adukale", type: "AI PRODUCT AD", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/Adukale%20Khara%20chakkli.mp4", landscape: true },
-  { title: "TripSniper", type: "AI UGC / TIKTOK", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/Copy%20of%20Copy%20of%20Tripsniper%20AD%20Reel%204.mp4" },
-  { title: "MoneyPilot", type: "PERFORMANCE CREATIVE", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/money%20pilot%20v43.mp4" },
-  { title: "CardOutpost", type: "SOCIAL CREATIVE", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/cardoutpost%202.mp4" },
+  { title: "Cannazo", type: "AI PRODUCT FILM", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/cannazo%20herovF.mp4", poster: "cannazo.svg" },
+  { title: "TripSniper", type: "AI UGC / TRAVEL AD", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/Copy%20of%20Copy%20of%20Tripsniper%20AD%20Reel%204.mp4", poster: "tripsniper.svg" },
 ];
 
 export default function Portfolio() {
+  const [workFolderOpen, setWorkFolderOpen] = useState(false);
+  const [projectFormOpen, setProjectFormOpen] = useState(false);
+
   useEffect(() => {
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let cleanupCursor = () => {};
@@ -146,19 +145,8 @@ export default function Portfolio() {
           scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: 0.5 }
         });
 
-        // Pinned horizontal showreel: vertical page scroll moves through eight playable clips.
-        const reel = document.querySelector<HTMLElement>(".showreel");
-        const track = document.querySelector<HTMLElement>(".showreel-track");
-        if (reel && track && window.matchMedia("(min-width: 851px)").matches) {
-          const distance = () => Math.max(0, track.scrollWidth - window.innerWidth + 40);
-          gsap.to(track, {
-            x: () => -distance(), ease: "none",
-            scrollTrigger: {
-              trigger: reel, start: "top top", end: () => `+=${distance()}`,
-              pin: true, scrub: 0.55, invalidateOnRefresh: true, anticipatePin: 1
-            }
-          });
-        }
+        // The reel stays in normal document flow. Native page scrolling remains available,
+        // and the short clip rail can be swiped horizontally without a pinned scroll trap.
 
         gsap.to(".scroll-progress", {
           scaleX: 1, ease: "none",
@@ -218,7 +206,7 @@ export default function Portfolio() {
       <nav className="nav">
         <a href="#top" className="brand"><b>G</b><span>GOKUL DAS KM</span></a>
         <div className="nav-links"><a href="#work">Work</a><a href="#services">Capabilities</a><a href="#about">About</a></div>
-        <a className="nav-pill" href="mailto:garciaalpha007@gmail.com">Let's talk</a>
+        <button className="nav-pill nav-pill-button" type="button" onClick={() => setProjectFormOpen(true)}>Start a project ↗</button>
       </nav>
 
       <section id="top" className="hero">
@@ -228,7 +216,7 @@ export default function Portfolio() {
           <p className="eyebrow">AI CONTENT CREATOR · AI VIDEO PRODUCER · AI UGC</p>
           <h1 className="hero-title"><span>I make ads</span><span>with AI.</span></h1>
           <p className="hero-sub">Generative video, AI UGC and performance creative for brands that need ideas to move faster.</p>
-          <div className="hero-actions"><a className="primary" href="#work">Explore work</a><a className="underlink" href="mailto:garciaalpha007@gmail.com">Available globally ↗</a></div>
+          <div className="hero-actions"><a className="primary" href="#work">Explore work ↓</a><a className="underlink" href="#showreel">Watch selected films ↘</a><button className="underlink hero-contact-trigger" type="button" onClick={() => setProjectFormOpen(true)}>Available globally ↗</button></div>
         </div>
         <div className="hero-metrics"><div><strong>300+</strong><small>AI videos</small></div><div><strong>1.5+</strong><small>years with AI</small></div><div><strong>15+</strong><small>brands & clients</small></div></div>
       </section>
@@ -237,21 +225,25 @@ export default function Portfolio() {
         <div className="showreel-pin">
           <div className="showreel-heading">
             <div>
-              <p className="eyebrow">SELECTED WORK / 01—08</p>
+              <p className="eyebrow">SELECTED WORK / 01—02</p>
               <h2>Scroll through<br /><em>the reel.</em></h2>
             </div>
-            <p className="showreel-instruction">Eight real projects. Scroll horizontally through the work. Use each player to play, pause, and turn sound on or off.</p>
+            <p className="showreel-instruction">Two distinct vertical films, with a thumbnail for each. Use the player controls for sound and playback, then keep scrolling for the case studies.</p>
           </div>
           <div className="showreel-track">
             {showreelClips.map((clip, i) => (
               <article className={`showreel-slide ${clip.landscape ? "showreel-slide--landscape" : ""}`} key={clip.title}>
                 <div className="showreel-video-frame">
+                  <img className="showreel-poster" src={`/posters/${clip.poster}`} alt={`${clip.title} video thumbnail`} loading={i < 3 ? "eager" : "lazy"} />
                   <video
                     className="showreel-video"
                     src={clip.src}
+                    poster={`/posters/${clip.poster}`}
                     controls
                     playsInline
                     preload="none"
+                    onLoadedData={(event) => event.currentTarget.classList.add("is-loaded")}
+                    onCanPlay={(event) => event.currentTarget.classList.add("is-loaded")}
                     aria-label={`${clip.title} showreel clip. Use controls for playback and sound.`}
                     onPlay={(event) => {
                       document.querySelectorAll<HTMLVideoElement>(".showreel-video").forEach((other) => {
@@ -261,19 +253,27 @@ export default function Portfolio() {
                   />
                 </div>
                 <div className="showreel-slide-meta">
-                  <span>{String(i + 1).padStart(2, "0")} / 08 · {clip.type}</span>
+                  <span>{String(i + 1).padStart(2, "0")} / 02 · {clip.type}</span>
                   <strong>{clip.title}</strong>
                 </div>
               </article>
             ))}
           </div>
-          <div className="showreel-footer"><span>SCROLL TO EXPLORE</span><span>01 — 08 <b>↔</b></span></div>
+          <div className="showreel-footer"><span>KEEP SCROLLING FOR CASE STUDIES</span><span>02 FILMS <b>↔</b></span></div>
         </div>
       </section>
 
       <section id="work" className="section work">
-        <div className="section-head reveal"><div><p className="eyebrow">FOUR CASE STUDIES · MORE SELECTED WORK</p><h2>Built for the scroll.</h2></div><p>Four featured case studies across performance ads, animation and AI UGC, followed by selected client work.</p></div>
-        <div className="project-grid">{projects.map((p)=><Project key={p.title} p={p}/>)}</div>
+        <div className="section-head reveal"><div><p className="eyebrow">FOUR FEATURED CASE STUDIES</p><h2>Built for the scroll.</h2></div><p>A focused selection of four projects. The rest stays tucked into the work folder, so the page can breathe.</p></div>
+        <div className="project-grid project-grid--featured">{projects.map((p)=><Project key={p.title} p={p}/>)}</div>
+        <div className="work-folder-wrap">
+          <button className="work-folder-toggle" type="button" aria-expanded={workFolderOpen} onClick={() => setWorkFolderOpen((open) => !open)}>
+            <span className="work-folder-icon" aria-hidden="true">▤</span>
+            <span className="work-folder-copy"><strong>Other work</strong><small>Additional cuts and selected projects · {otherWorks.length} videos</small></span>
+            <span className={`work-folder-arrow ${workFolderOpen ? "is-open" : ""}`} aria-hidden="true">↗</span>
+          </button>
+          {workFolderOpen && <div className="project-grid project-grid--folder">{otherWorks.map((p)=><Project key={p.title} p={p}/>)}</div>}
+        </div>
       </section>
 
       <section id="services" className="section services">
@@ -308,22 +308,53 @@ export default function Portfolio() {
         <div className="about-copy reveal">
           <p>I’m Gokul Das KM, an AI content creator and video producer focused on generative advertising, AI UGC and short-form creative.</p>
           <p>I’ve produced 300+ AI videos across agency, freelance and studio work, including Trifid Media, TripleSpeed and K12 Ad Labs.</p>
-          <div className="socials"><a href="https://www.linkedin.com/in/gokul-das-k-m-728795348/" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a><a href="https://www.instagram.com/gokulgxz/" target="_blank" rel="noopener noreferrer">Instagram ↗</a><a href="mailto:garciaalpha007@gmail.com">Email ↗</a><a href="https://wa.me/919074512437?text=Hi%20Gokul%2C%20I%20came%20across%20your%20portfolio%20and%20would%20like%20to%20discuss%20a%20project." target="_blank" rel="noopener noreferrer">WhatsApp ↗</a><a href="tel:+919074512437">+91 90745 12437 ↗</a></div>
+          <div className="socials"><a href="https://www.linkedin.com/in/gokul-das-k-m-728795348/" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a><a href="https://www.instagram.com/gokulgxz/" target="_blank" rel="noopener noreferrer">Instagram ↗</a><a href="https://mail.google.com/mail/?view=cm&fs=1&to=garciaalpha007@gmail.com" target="_blank" rel="noopener noreferrer">Email ↗</a><a href="https://wa.me/919074512437?text=Hi%20Gokul%2C%20I%20came%20across%20your%20portfolio%20and%20would%20like%20to%20discuss%20a%20project." target="_blank" rel="noopener noreferrer">WhatsApp ↗</a></div>
         </div>
       </section>
 
       <section className="contact">
         <p className="eyebrow">GLOBAL / REMOTE</p>
         <h2>Have an idea<br/><em>worth making?</em></h2>
-        <a href="mailto:garciaalpha007@gmail.com" className="contact-button">Start a project ↗</a>
+        <button type="button" onClick={() => setProjectFormOpen(true)} className="contact-button">Start a project <span aria-hidden="true">↗</span></button>
         <div className="contact-methods" aria-label="Contact links">
-          <a href="mailto:garciaalpha007@gmail.com">garciaalpha007@gmail.com</a>
-          <a href="tel:+919074512437">+91 90745 12437</a>
+          <a href="https://mail.google.com/mail/?view=cm&fs=1&to=garciaalpha007@gmail.com" target="_blank" rel="noopener noreferrer">Email ↗</a>
           <a href="https://wa.me/919074512437?text=Hi%20Gokul%2C%20I%20came%20across%20your%20portfolio%20and%20would%20like%20to%20discuss%20a%20project." target="_blank" rel="noopener noreferrer">WhatsApp ↗</a>
           <a href="https://www.linkedin.com/in/gokul-das-k-m-728795348/" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a>
           <a href="https://www.instagram.com/gokulgxz/" target="_blank" rel="noopener noreferrer">Instagram ↗</a>
         </div>
       </section>
+
+      {projectFormOpen && (
+        <div className="project-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setProjectFormOpen(false); }}>
+          <section className="project-modal" role="dialog" aria-modal="true" aria-labelledby="project-modal-title">
+            <button type="button" className="project-modal-close" aria-label="Close project enquiry form" onClick={() => setProjectFormOpen(false)}>×</button>
+            <p className="eyebrow">LET’S MAKE SOMETHING</p>
+            <h2 id="project-modal-title">Start a project.</h2>
+            <p className="project-modal-intro">Share a few details and I’ll get back to you directly.</p>
+            <form className="project-enquiry-form" action="https://formsubmit.co/garciaalpha007@gmail.com" method="POST">
+              <input type="hidden" name="_subject" value="New portfolio project enquiry" />
+              <input type="hidden" name="_template" value="table" />
+              <input type="text" name="_honey" className="form-honeypot" tabIndex={-1} autoComplete="off" aria-hidden="true" />
+              <label>Name<input name="name" type="text" placeholder="Your name" autoComplete="name" required /></label>
+              <label>Email<input name="email" type="email" placeholder="you@company.com" autoComplete="email" required /></label>
+              <label>Phone / WhatsApp<input name="phone" type="tel" placeholder="Country code + number" autoComplete="tel" required /></label>
+              <label>What are you looking for?
+                <select name="project_type" defaultValue="" required>
+                  <option value="" disabled>Select a project type</option>
+                  <option>AI UGC / Performance Ads</option>
+                  <option>AI Product Film / Commercial</option>
+                  <option>AI Animation / Explainer</option>
+                  <option>Ongoing Creative Partnership</option>
+                  <option>Something else</option>
+                </select>
+              </label>
+              <label>Project details <span className="form-optional">(optional)</span><textarea name="message" rows={3} placeholder="A short note about your idea, timeline or budget…" /></label>
+              <button className="project-form-submit" type="submit">Send project enquiry <span aria-hidden="true">↗</span></button>
+              <p className="form-privacy-note">Your details are used only to respond to this enquiry.</p>
+            </form>
+          </section>
+        </div>
+      )}
 
       <footer><span>GOKUL DAS KM</span><span>AI CONTENT · VIDEO · UGC</span><span>BANGALORE / GLOBAL</span></footer>
     </main>
