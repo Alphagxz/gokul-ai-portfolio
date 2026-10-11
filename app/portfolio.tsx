@@ -196,6 +196,7 @@ type JellyForce = {
 type JellySplashStyle = CSSProperties & { "--splash-angle": string; "--splash-distance": string };
 type JellyDrag = {
   pointerId: number;
+  mode: "move" | "stretch";
   startClientX: number;
   startClientY: number;
   startPosition: GooPosition;
@@ -214,7 +215,7 @@ function buildJellyPath(force: JellyForce, time: number, variant: number) {
   const count = 42;
   const center = 90;
   const radius = variant === 0 ? 58 : 47;
-  const dragMagnitude = Math.min(1.15, Math.hypot(force.dragX, force.dragY));
+  const dragMagnitude = Math.min(2.6, Math.hypot(force.dragX, force.dragY));
   const dragAngle = Math.atan2(force.dragY, force.dragX);
   const phase = force.phase;
   for (let i = 0; i < count; i++) {
@@ -223,7 +224,12 @@ function buildJellyPath(force: JellyForce, time: number, variant: number) {
     const localDent = -0.25 * force.contactStrength * Math.exp(-Math.pow(contactDistance / 0.36, 2));
     const nearbyBulgeA = 0.105 * force.contactStrength * Math.exp(-Math.pow((contactDistance - 0.60) / 0.26, 2));
     const nearbyBulgeB = 0.105 * force.contactStrength * Math.exp(-Math.pow((contactDistance + 0.60) / 0.26, 2));
-    const elasticStretch = dragMagnitude * (0.34 * Math.cos(angle - dragAngle) - 0.08 * Math.cos(2 * (angle - dragAngle)));
+    const alongPull = Math.cos(angle - dragAngle);
+    // Stretch the material itself: the pulled side grows, the opposite side thins,
+    // while the toy's center stays anchored in edge-stretch mode.
+    const elasticStretch = Math.max(-0.58, Math.min(1.7,
+      dragMagnitude * (0.70 * alongPull - 0.16 * Math.cos(2 * (angle - dragAngle)))
+    ));
     const radialPulse = force.splash * (0.075 * Math.sin(angle * 7 + time * 0.018 + phase) + 0.038 * Math.sin(angle * 11 - time * 0.022));
     const idleWobble = 0.024 * Math.sin(angle * 3 + time * 0.0018 + phase) + 0.014 * Math.sin(angle * 5 - time * 0.0013 + phase * 1.7);
     const pressedFill = force.press * 0.075;
@@ -305,6 +311,9 @@ function JellyToy({ index, position, stageRef, onPositionChange, soundEnabled, p
     const rect = target.getBoundingClientRect();
     const localX = ((event.clientX - rect.left) / Math.max(rect.width, 1)) * 180 - 90;
     const localY = ((event.clientY - rect.top) / Math.max(rect.height, 1)) * 180 - 90;
+    const normalizedRadius = Math.hypot(localX, localY) / 90;
+    // Grab near the middle to move the whole toy. Grab near the rim to pull the jelly itself.
+    const mode: JellyDrag["mode"] = normalizedRadius > 0.48 ? "stretch" : "move";
     const f = forceRef.current;
     f.contactAngle = Math.atan2(localY, localX);
     f.pressTarget = 1;
@@ -313,6 +322,7 @@ function JellyToy({ index, position, stageRef, onPositionChange, soundEnabled, p
     loopRef.current?.();
     dragRef.current = {
       pointerId: event.pointerId,
+      mode,
       startClientX: event.clientX,
       startClientY: event.clientY,
       startPosition: position,
@@ -331,14 +341,17 @@ function JellyToy({ index, position, stageRef, onPositionChange, soundEnabled, p
     if (!bounds.width || !bounds.height) return;
     const dx = event.clientX - drag.startClientX;
     const dy = event.clientY - drag.startClientY;
-    onPositionChange(index, {
-      x: Math.max(8, Math.min(92, drag.startPosition.x + (dx / bounds.width) * 100)),
-      y: Math.max(12, Math.min(88, drag.startPosition.y + (dy / bounds.height) * 100)),
-    });
+    if (drag.mode === "move") {
+      onPositionChange(index, {
+        x: Math.max(4, Math.min(96, drag.startPosition.x + (dx / bounds.width) * 100)),
+        y: Math.max(8, Math.min(92, drag.startPosition.y + (dy / bounds.height) * 100)),
+      });
+    }
     const f = forceRef.current;
-    f.dragXTarget = Math.max(-1.15, Math.min(1.15, dx / 95));
-    f.dragYTarget = Math.max(-1.15, Math.min(1.15, dy / 95));
-    f.pressTarget = 0.58;
+    // Edge drags stretch the jelly in place, with a much longer elastic range.
+    f.dragXTarget = drag.mode === "stretch" ? Math.max(-2.6, Math.min(2.6, dx / 52)) : 0;
+    f.dragYTarget = drag.mode === "stretch" ? Math.max(-2.6, Math.min(2.6, dy / 52)) : 0;
+    f.pressTarget = drag.mode === "stretch" ? 0.28 : 0.58;
     f.contactTarget = 0.58;
     const rect = event.currentTarget.getBoundingClientRect();
     const localX = ((event.clientX - rect.left) / Math.max(rect.width, 1)) * 180 - 90;
@@ -400,10 +413,213 @@ function JellyToy({ index, position, stageRef, onPositionChange, soundEnabled, p
         </g>
       </svg>
       <span className={`jelly-splash${splashKey > 0 ? " is-active" : ""}`} key={splashKey} aria-hidden="true">
-        {Array.from({ length: 7 }, (_, i) => <i key={i} style={{ "--splash-angle": `${(360 / 7) * i}deg`, "--splash-distance": `${index === 0 ? 44 + (i % 3) * 7 : 35 + (i % 3) * 6}px` } as JellySplashStyle} />)}
+        {Array.from({ length: 11 }, (_, i) => <i key={i} style={{ "--splash-angle": `${(360 / 11) * i}deg`, "--splash-distance": `${index === 0 ? 62 + (i % 4) * 13 : 48 + (i % 4) * 11}px` } as JellySplashStyle} />)}
       </span>
       <span className={`jelly-ripple${splashKey > 0 ? " is-active" : ""}`} key={`ripple-${splashKey}`} aria-hidden="true" />
     </button>
+  );
+}
+
+
+type ParticleMode = "attract" | "repel" | "swirl" | "flow";
+type ParticleDot = { x: number; y: number; px: number; py: number; vx: number; vy: number; size: number; hue: number; alpha: number; phase: number };
+type ParticleBurst = { x: number; y: number; radius: number; life: number };
+
+function ParticlePlayground({ onBurst }: { onBurst: () => void }) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const stageRef = useRef<HTMLDivElement | null>(null);
+  const [mode, setMode] = useState<ParticleMode>("attract");
+  const [resetToken, setResetToken] = useState(0);
+  const pointerRef = useRef({ x: 0, y: 0, active: false });
+  const onBurstRef = useRef(onBurst);
+  onBurstRef.current = onBurst;
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const stage = stageRef.current;
+    const context = canvas?.getContext("2d", { alpha: true });
+    if (!canvas || !stage || !context) return;
+
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let frame = 0;
+    let width = 1;
+    let height = 1;
+    let dpr = 1;
+    let lastTime = 0;
+    let dots: ParticleDot[] = [];
+    const bursts: ParticleBurst[] = [];
+    const pointer = pointerRef.current;
+
+    const makeDots = () => {
+      const area = width * height;
+      const count = Math.max(68, Math.min(210, Math.round(area / (window.innerWidth < 600 ? 1900 : 2500))));
+      dots = Array.from({ length: count }, () => {
+        const x = Math.random() * width;
+        const y = Math.random() * height;
+        return {
+          x, y, px: x, py: y,
+          vx: (Math.random() - 0.5) * 0.38,
+          vy: (Math.random() - 0.5) * 0.38,
+          size: 0.7 + Math.random() * 1.35,
+          hue: Math.random() < 0.72 ? 248 + Math.random() * 40 : 176 + Math.random() * 35,
+          alpha: 0.28 + Math.random() * 0.62,
+          phase: Math.random() * Math.PI * 2,
+        };
+      });
+    };
+
+    const resize = () => {
+      const rect = stage.getBoundingClientRect();
+      width = Math.max(1, rect.width);
+      height = Math.max(1, rect.height);
+      dpr = Math.min(window.devicePixelRatio || 1, 1.8);
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      context.setTransform(dpr, 0, 0, dpr, 0, 0);
+      makeDots();
+    };
+
+    const localPoint = (event: PointerEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      pointer.x = event.clientX - rect.left;
+      pointer.y = event.clientY - rect.top;
+      pointer.active = pointer.x >= 0 && pointer.y >= 0 && pointer.x <= rect.width && pointer.y <= rect.height;
+    };
+    const pointerMove = (event: PointerEvent) => localPoint(event);
+    const pointerLeave = () => { pointer.active = false; };
+    const pointerDown = (event: PointerEvent) => {
+      if ((event.target as HTMLElement | null)?.closest("button")) return;
+      localPoint(event);
+      bursts.push({ x: pointer.x, y: pointer.y, radius: 0, life: 1 });
+      if (bursts.length > 5) bursts.shift();
+      onBurstRef.current();
+    };
+
+    const draw = (now: number) => {
+      const dt = lastTime ? Math.min(1.8, Math.max(0.4, (now - lastTime) / 16.67)) : 1;
+      lastTime = now;
+      context.clearRect(0, 0, width, height);
+      const t = now * 0.001;
+      const animate = !reducedMotion || pointer.active || bursts.length > 0;
+      context.globalCompositeOperation = "lighter";
+
+      for (const dot of dots) {
+        dot.px = dot.x;
+        dot.py = dot.y;
+        if (animate) {
+          if (!reducedMotion) {
+            dot.vx += Math.sin(dot.y * 0.009 + t * 0.34 + dot.phase) * 0.008 * dt;
+            dot.vy += Math.cos(dot.x * 0.008 - t * 0.27 + dot.phase) * 0.009 * dt;
+          }
+          const dx = pointer.x - dot.x;
+          const dy = pointer.y - dot.y;
+          const distance = Math.max(1, Math.hypot(dx, dy));
+          if (pointer.active && distance < 245) {
+            const strength = (1 - distance / 245) ** 2;
+            if (mode === "attract") {
+              dot.vx += (dx / distance) * strength * 0.085 * dt;
+              dot.vy += (dy / distance) * strength * 0.085 * dt;
+            } else if (mode === "repel") {
+              dot.vx -= (dx / distance) * strength * 0.16 * dt;
+              dot.vy -= (dy / distance) * strength * 0.16 * dt;
+            } else if (mode === "swirl") {
+              dot.vx += (-dy / distance) * strength * 0.115 * dt;
+              dot.vy += (dx / distance) * strength * 0.115 * dt;
+              dot.vx -= (dx / distance) * strength * 0.025 * dt;
+              dot.vy -= (dy / distance) * strength * 0.025 * dt;
+            } else {
+              dot.vx += Math.sin(dy * 0.014 + t + dot.phase) * strength * 0.065 * dt;
+              dot.vy += Math.cos(dx * 0.014 - t + dot.phase) * strength * 0.065 * dt;
+            }
+          }
+          for (const burst of bursts) {
+            const bx = dot.x - burst.x;
+            const by = dot.y - burst.y;
+            const bd = Math.max(1, Math.hypot(bx, by));
+            const ringDistance = Math.abs(bd - burst.radius);
+            if (ringDistance < 34) {
+              const wave = (1 - ringDistance / 34) * burst.life;
+              dot.vx += (bx / bd) * wave * 0.2 * dt;
+              dot.vy += (by / bd) * wave * 0.2 * dt;
+            }
+          }
+          dot.vx *= mode === "flow" ? 0.992 : 0.984;
+          dot.vy *= mode === "flow" ? 0.992 : 0.984;
+          const speed = Math.hypot(dot.vx, dot.vy);
+          const maxSpeed = mode === "repel" ? 3.1 : 2.2;
+          if (speed > maxSpeed) { dot.vx = dot.vx / speed * maxSpeed; dot.vy = dot.vy / speed * maxSpeed; }
+          dot.x += dot.vx * dt;
+          dot.y += dot.vy * dt;
+          if (dot.x < -8) { dot.x = width + 8; dot.px = dot.x; }
+          if (dot.x > width + 8) { dot.x = -8; dot.px = dot.x; }
+          if (dot.y < -8) { dot.y = height + 8; dot.py = dot.y; }
+          if (dot.y > height + 8) { dot.y = -8; dot.py = dot.y; }
+        }
+        const hue = dot.hue;
+        context.strokeStyle = `hsla(${hue}, 96%, 76%, ${dot.alpha * (animate ? 0.48 : 0.32)})`;
+        context.lineWidth = dot.size * 0.8;
+        context.beginPath();
+        context.moveTo(dot.px, dot.py);
+        context.lineTo(dot.x, dot.y);
+        context.stroke();
+        context.fillStyle = `hsla(${hue}, 100%, 82%, ${dot.alpha})`;
+        context.beginPath();
+        context.arc(dot.x, dot.y, dot.size, 0, Math.PI * 2);
+        context.fill();
+      }
+
+      for (let i = bursts.length - 1; i >= 0; i--) {
+        const burst = bursts[i];
+        if (animate) { burst.radius += 7.5 * dt; burst.life -= 0.018 * dt; }
+        context.beginPath();
+        context.arc(burst.x, burst.y, burst.radius, 0, Math.PI * 2);
+        context.strokeStyle = `rgba(187, 158, 255, ${Math.max(0, burst.life) * 0.58})`;
+        context.lineWidth = 1.2;
+        context.stroke();
+        context.beginPath();
+        context.arc(burst.x, burst.y, burst.radius * 0.72, 0, Math.PI * 2);
+        context.strokeStyle = `rgba(113, 229, 229, ${Math.max(0, burst.life) * 0.24})`;
+        context.lineWidth = 0.8;
+        context.stroke();
+        if (burst.life <= 0) bursts.splice(i, 1);
+      }
+      context.globalCompositeOperation = "source-over";
+      frame = window.requestAnimationFrame(draw);
+    };
+
+    resize();
+    stage.addEventListener("pointermove", pointerMove, { passive: true });
+    stage.addEventListener("pointerleave", pointerLeave, { passive: true });
+    stage.addEventListener("pointerdown", pointerDown);
+    window.addEventListener("resize", resize);
+    frame = window.requestAnimationFrame(draw);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      stage.removeEventListener("pointermove", pointerMove);
+      stage.removeEventListener("pointerleave", pointerLeave);
+      stage.removeEventListener("pointerdown", pointerDown);
+      window.removeEventListener("resize", resize);
+    };
+  }, [mode, resetToken]);
+
+  const modes: { value: ParticleMode; label: string }[] = [
+    { value: "attract", label: "ATTRACT" },
+    { value: "repel", label: "REPEL" },
+    { value: "swirl", label: "SWIRL" },
+    { value: "flow", label: "FLOW" },
+  ];
+
+  return (
+    <div className="particle-playground" ref={stageRef} aria-label="Interactive particle playground. Move to influence the particles and tap to create a ripple.">
+      <canvas ref={canvasRef} className="particle-canvas" aria-label="Interactive field of glowing particles" />
+      <div className="particle-playground-label" aria-hidden="true"><span>PARTICLE PLAYGROUND</span><small>MOVE TO SHAPE THE FLOW</small></div>
+      <div className="particle-mode-controls" role="group" aria-label="Particle interaction mode">
+        {modes.map((item) => <button key={item.value} type="button" className={mode === item.value ? "is-active" : ""} aria-pressed={mode === item.value} onClick={() => setMode(item.value)}>{item.label}</button>)}
+        <button type="button" className="particle-reset" onClick={() => setResetToken((value) => value + 1)} aria-label="Reset particle field">RESET ↺</button>
+      </div>
+    </div>
   );
 }
 
@@ -415,6 +631,7 @@ export default function Portfolio() {
     { x: 75, y: 66 },
   ]);
   const [jellySoundEnabled, setJellySoundEnabled] = useState(false);
+  const [interactiveMode, setInteractiveMode] = useState<"jelly" | "particles">("jelly");
   const gooPlaygroundRef = useRef<HTMLDivElement | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
 
@@ -582,20 +799,30 @@ export default function Portfolio() {
           <div className="hero-metric"><strong data-metric="years">1.5+</strong><small>years with AI</small></div>
           <div className="hero-metric"><strong data-metric="brands">15+</strong><small>brands &amp; clients</small></div>
         </div>
-        <div className="goo-playground" ref={gooPlaygroundRef} aria-label="Two interactive, draggable jelly toys">
-          {gooPositions.map((position, index) => (
-            <JellyToy
-              key={index}
-              index={index}
-              position={position}
-              stageRef={gooPlaygroundRef}
-              onPositionChange={updateGooPosition}
-              soundEnabled={jellySoundEnabled}
-              playSound={playJellySound}
-            />
-          ))}
+        <div className={`goo-playground${interactiveMode === "particles" ? " is-particles-mode" : ""}`} ref={gooPlaygroundRef} aria-label="Interactive jelly toy and particle playground">
+          {interactiveMode === "jelly" ? (
+            <>
+              {gooPositions.map((position, index) => (
+                <JellyToy
+                  key={index}
+                  index={index}
+                  position={position}
+                  stageRef={gooPlaygroundRef}
+                  onPositionChange={updateGooPosition}
+                  soundEnabled={jellySoundEnabled}
+                  playSound={playJellySound}
+                />
+              ))}
+            </>
+          ) : (
+            <ParticlePlayground onBurst={() => playJellySound("pop")} />
+          )}
           <div className="goo-playground-note">
-            <span className="goo-playground-hint" aria-hidden="true">GRAB · SQUISH · STRETCH · RELEASE</span>
+            <div className="playground-experience-switch" role="group" aria-label="Choose interactive experience">
+              <button type="button" aria-pressed={interactiveMode === "jelly"} className={interactiveMode === "jelly" ? "is-active" : ""} onClick={() => setInteractiveMode("jelly")}>JELLY</button>
+              <button type="button" aria-pressed={interactiveMode === "particles"} className={interactiveMode === "particles" ? "is-active" : ""} onClick={() => setInteractiveMode("particles")}>PARTICLES</button>
+            </div>
+            {interactiveMode === "jelly" && <span className="goo-playground-hint" aria-hidden="true">GRAB · SQUISH · STRETCH · RELEASE</span>}
             <button className="goo-sound-toggle" type="button" aria-pressed={jellySoundEnabled} onClick={() => setJellySoundEnabled((enabled) => !enabled)}>
               <span aria-hidden="true">{jellySoundEnabled ? "♪" : "♫"}</span> SOUND {jellySoundEnabled ? "ON" : "OFF"}
             </button>
