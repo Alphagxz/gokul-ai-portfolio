@@ -1,6 +1,6 @@
  "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -86,11 +86,11 @@ function Project({ p }: { p: PortfolioProject }) {
           <span className="placeholder-type">{p.type}</span>
           <span className="placeholder-mark">G<span>·</span></span>
         </div>
-        {p.poster && <img className="project-poster" src={`/posters/${p.poster}`} alt={`${p.title} video thumbnail`} loading="lazy" />}
+        {p.poster && <img className="project-poster" src={`/poster/${p.poster}`} alt={`${p.title} video thumbnail`} loading="lazy" />}
         <video
           ref={ref}
           data-video-src={p.src ?? `/videos/${p.file}`}
-          poster={p.poster ? `/posters/${p.poster}` : undefined}
+          poster={p.poster ? `/poster/${p.poster}` : undefined}
           controls
           playsInline
           preload="none"
@@ -113,7 +113,9 @@ function Project({ p }: { p: PortfolioProject }) {
   );
 }
 
-const showreelClips = [
+type ShowreelClip = { title: string; type: string; src: string; poster: string };
+
+const showreelClips: ShowreelClip[] = [
   { title: "Cannazo", type: "AI PRODUCT FILM", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/cannazo%20herovF.mp4", poster: "cannazo.svg" },
   { title: "Pet Project", type: "AI ANIMATED BRAND FILM", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/pet%20project%20spa%20Animated.mp4", poster: "pet-project.svg" },
   { title: "Cheater Scanner", type: "AI UGC / SOCIAL AD", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/cheaterscanner%20v22.mp4", poster: "cheater-scanner.svg" },
@@ -121,18 +123,121 @@ const showreelClips = [
   { title: "TripSniper", type: "AI UGC / TRAVEL AD", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/Copy%20of%20Copy%20of%20Tripsniper%20AD%20Reel%204.mp4", poster: "tripsniper.svg" },
 ];
 
+function ShowreelCard({ clip, index }: { clip: ShowreelClip; index: number }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [playError, setPlayError] = useState(false);
+
+  const startPlayback = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    setPlayError(false);
+    const attempt = video.play();
+    if (attempt && typeof attempt.catch === "function") {
+      attempt.catch(() => setPlayError(true));
+    }
+  };
+
+  return (
+    <article className="showreel-slide" key={clip.title}>
+      <div className={`showreel-video-frame${isPlaying ? " is-playing" : ""}${playError ? " has-error" : ""}`}>
+        <video
+          ref={videoRef}
+          className="showreel-video"
+          src={clip.src}
+          poster={`/poster/${clip.poster}`}
+          controls
+          playsInline
+          preload="metadata"
+          aria-label={`${clip.title} showreel clip. Use controls for playback and sound.`}
+          onLoadedData={() => setPlayError(false)}
+          onCanPlay={() => setPlayError(false)}
+          onError={() => { setIsPlaying(false); setPlayError(true); }}
+          onPlay={() => {
+            setIsPlaying(true);
+            setPlayError(false);
+            document.querySelectorAll<HTMLVideoElement>(".showreel-video").forEach((other) => {
+              if (other !== videoRef.current) other.pause();
+            });
+          }}
+          onPause={() => setIsPlaying(false)}
+        />
+        <div className="showreel-title-overlay">
+          <span className="showreel-overlay-index">{String(index + 1).padStart(2, "0")} / 05</span>
+          <strong>{clip.title}</strong>
+          <span className="showreel-overlay-type">{clip.type}</span>
+          <button className="showreel-center-play" type="button" onClick={startPlayback} aria-label={`Play ${clip.title}`}>
+            <span aria-hidden="true">▶</span>
+          </button>
+          <small className="showreel-play-label">{playError ? "REEL COULD NOT LOAD · TRY AGAIN" : "PLAY FILM"}</small>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+type GooPosition = { x: number; y: number };
+type GooDrag = { index: number; pointerId: number; startX: number; startY: number; originX: number; originY: number };
+
 export default function Portfolio() {
   const [workFolderOpen, setWorkFolderOpen] = useState(false);
   const [projectFormOpen, setProjectFormOpen] = useState(false);
-  const [stressPresses, setStressPresses] = useState(0);
-  const [squishing, setSquishing] = useState(false);
-  const [buttonPressed, setButtonPressed] = useState(false);
-  const stressResetRef = useRef<number | null>(null);
-  const buttonResetRef = useRef<number | null>(null);
+  const [gooPositions, setGooPositions] = useState<GooPosition[]>([
+    { x: 83, y: 39 },
+    { x: 76, y: 64 },
+  ]);
+  const [draggingGoo, setDraggingGoo] = useState<number | null>(null);
+  const [gooTension, setGooTension] = useState<{ angle: number; stretch: number } | null>(null);
+  const gooPlaygroundRef = useRef<HTMLDivElement | null>(null);
+  const gooDragRef = useRef<GooDrag | null>(null);
 
-  useEffect(() => () => {
-    if (stressResetRef.current) window.clearTimeout(stressResetRef.current);
-    if (buttonResetRef.current) window.clearTimeout(buttonResetRef.current);
+  const handleGooPointerDown = (event: ReactPointerEvent<HTMLButtonElement>, index: number) => {
+    event.preventDefault();
+    const pos = gooPositions[index];
+    if (!pos) return;
+    gooDragRef.current = {
+      index,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      originX: pos.x,
+      originY: pos.y,
+    };
+    setDraggingGoo(index);
+    setGooTension({ angle: 0, stretch: 1.12 });
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const handleGooPointerMove = (event: ReactPointerEvent<HTMLButtonElement>, index: number) => {
+    const drag = gooDragRef.current;
+    const stage = gooPlaygroundRef.current;
+    if (!drag || drag.index !== index || drag.pointerId !== event.pointerId || !stage) return;
+    const bounds = stage.getBoundingClientRect();
+    if (!bounds.width || !bounds.height) return;
+    const dx = event.clientX - drag.startX;
+    const dy = event.clientY - drag.startY;
+    const nextX = Math.max(5, Math.min(95, drag.originX + (dx / bounds.width) * 100));
+    const nextY = Math.max(7, Math.min(93, drag.originY + (dy / bounds.height) * 100));
+    setGooPositions((current) => current.map((position, i) => i === index ? { x: nextX, y: nextY } : position));
+    const distance = Math.hypot(dx, dy);
+    setGooTension({ angle: Math.atan2(dy, dx) * (180 / Math.PI), stretch: 1 + Math.min(distance / 230, 0.62) });
+  };
+
+  const handleGooPointerUp = (event: ReactPointerEvent<HTMLButtonElement>, index: number) => {
+    const drag = gooDragRef.current;
+    if (!drag || drag.index !== index || drag.pointerId !== event.pointerId) return;
+    gooDragRef.current = null;
+    setDraggingGoo(null);
+    setGooTension(null);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  };
+
+  useEffect(() => {
+    if (window.matchMedia("(max-width: 850px)").matches) {
+      setGooPositions([{ x: 70, y: 31 }, { x: 31, y: 69 }]);
+    }
   }, []);
 
   useEffect(() => {
@@ -257,41 +362,43 @@ export default function Portfolio() {
           <div className="hero-metric"><strong data-metric="years">1.5+</strong><small>years with AI</small></div>
           <div className="hero-metric"><strong data-metric="brands">15+</strong><small>brands &amp; clients</small></div>
         </div>
-        <aside className="stress-playground" aria-label="Interactive stress-relief playground">
-          <div className="stress-playground-head">
-            <div>
-              <span className="stress-kicker">A TINY DIGITAL RESET</span>
-              <h2>Take a breath<span>.</span></h2>
-              <p>Squish the chrome blob. Press the button. No score, no pressure.</p>
-            </div>
-            <span className="stress-live-dot" aria-hidden="true" />
-          </div>
-          <div className={`stress-ball-stage ${squishing ? "is-squishing" : ""}`}>
-            <div className="stress-halo stress-halo--one" aria-hidden="true" />
-            <div className="stress-halo stress-halo--two" aria-hidden="true" />
+        <div className="goo-playground" ref={gooPlaygroundRef} aria-label="Two interactive, draggable slime toys">
+          {gooPositions.map((position, index) => (
             <button
+              key={index}
               type="button"
-              className={`stress-ball ${squishing ? "is-squishing" : ""}`}
-              aria-label="Squish the stress ball"
-              onPointerDown={() => { setSquishing(true); setStressPresses((n) => n + 1); if (stressResetRef.current) window.clearTimeout(stressResetRef.current); }}
-              onPointerUp={() => { stressResetRef.current = window.setTimeout(() => setSquishing(false), 180); }}
-              onPointerLeave={() => { stressResetRef.current = window.setTimeout(() => setSquishing(false), 180); }}
-              onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") setSquishing(true); }}
-              onKeyUp={() => setSquishing(false)}
+              className={`goo-toy goo-toy--${index === 0 ? "violet" : "pearl"}${draggingGoo === index ? " is-dragging" : ""}`}
+              style={{
+                left: `${position.x}%`,
+                top: `${position.y}%`,
+                zIndex: draggingGoo === index ? 8 : 4,
+              }}
+              aria-label={index === 0 ? "Drag and squish the violet slime toy" : "Drag and squish the iridescent slime toy"}
+              onPointerDown={(event) => handleGooPointerDown(event, index)}
+              onPointerMove={(event) => handleGooPointerMove(event, index)}
+              onPointerUp={(event) => handleGooPointerUp(event, index)}
+              onPointerCancel={(event) => handleGooPointerUp(event, index)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  setDraggingGoo(index);
+                  setGooTension({ angle: 0, stretch: 1.23 });
+                }
+              }}
+              onKeyUp={() => { setDraggingGoo(null); setGooTension(null); }}
             >
-              <span className="stress-ball-glint" />
-              <span className="stress-ball-shine" />
+              <span
+                className="goo-toy-body"
+                style={{ transform: draggingGoo === index && gooTension ? `rotate(${gooTension.angle}deg) scaleX(${gooTension.stretch}) scaleY(${1 / gooTension.stretch})` : undefined }}
+              >
+                <span className="goo-toy-gloss goo-toy-gloss--one" />
+                <span className="goo-toy-gloss goo-toy-gloss--two" />
+                <span className="goo-toy-core" />
+              </span>
             </button>
-            <span className="stress-ball-hint">PRESS · DRAG · RELEASE</span>
-            <span className="stress-counter">SQUISHES <b>{String(stressPresses).padStart(2, "0")}</b></span>
-          </div>
-          <div className="satisfying-row">
-            <div className="satisfying-copy"><span>NEED A LITTLE RESET?</span><small>Give this one a press.</small></div>
-            <button type="button" className={`satisfying-button ${buttonPressed ? "is-pressed" : ""}`} onClick={() => { setButtonPressed(true); if (buttonResetRef.current) window.clearTimeout(buttonResetRef.current); buttonResetRef.current = window.setTimeout(() => setButtonPressed(false), 650); }}>
-              <span className="satisfying-button-icon">✳</span><span>PRESS FOR CALM</span><span className="satisfying-button-arrow">↗</span>
-            </button>
-          </div>
-        </aside>
+          ))}
+          <span className="goo-playground-hint" aria-hidden="true">GRAB IT · PULL IT · LET IT GO</span>
+        </div>
       </section>
 
       <section className="showreel" id="showreel" aria-label="Selected video work">
@@ -301,36 +408,10 @@ export default function Portfolio() {
               <p className="eyebrow">SELECTED WORK / 01—05</p>
               <h2>Scroll through<br /><em>the reel.</em></h2>
             </div>
-            <p className="showreel-instruction">Five selected vertical films, each with its own thumbnail. Use the player controls for sound and playback, then keep scrolling for the case studies.</p>
+            <p className="showreel-instruction">Five selected films with centered titles and direct playback controls. Keep scrolling for the case studies.</p>
           </div>
           <div className="showreel-track">
-            {showreelClips.map((clip, i) => (
-              <article className="showreel-slide" key={clip.title}>
-                <div className="showreel-video-frame">
-                  <img className="showreel-poster" src={`/posters/${clip.poster}`} alt={`${clip.title} video thumbnail`} loading={i < 3 ? "eager" : "lazy"} />
-                  <video
-                    className="showreel-video"
-                    src={clip.src}
-                    poster={`/posters/${clip.poster}`}
-                    controls
-                    playsInline
-                    preload="none"
-                    onLoadedData={(event) => event.currentTarget.classList.add("is-loaded")}
-                    onCanPlay={(event) => event.currentTarget.classList.add("is-loaded")}
-                    aria-label={`${clip.title} showreel clip. Use controls for playback and sound.`}
-                    onPlay={(event) => {
-                      document.querySelectorAll<HTMLVideoElement>(".showreel-video").forEach((other) => {
-                        if (other !== event.currentTarget) other.pause();
-                      });
-                    }}
-                  />
-                </div>
-                <div className="showreel-slide-meta">
-                  <span>{String(i + 1).padStart(2, "0")} / 05 · {clip.type}</span>
-                  <strong>{clip.title}</strong>
-                </div>
-              </article>
-            ))}
+            {showreelClips.map((clip, i) => <ShowreelCard key={clip.title} clip={clip} index={i} />)}
           </div>
           <div className="showreel-footer"><span>KEEP SCROLLING FOR CASE STUDIES</span><span>05 FILMS <b>↔</b></span></div>
         </div>
