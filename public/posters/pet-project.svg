@@ -1,13 +1,28 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="540" height="960" viewBox="0 0 540 960">
-  <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#20141b"/><stop offset="1" stop-color="#07090b"/></linearGradient><radialGradient id="halo"><stop offset="0" stop-color="#ffb6c8" stop-opacity=".22"/><stop offset="1" stop-color="#ffb6c8" stop-opacity="0"/></radialGradient></defs>
-  <rect width="540" height="960" fill="url(#bg)"/><circle cx="405" cy="235" r="270" fill="url(#halo)"/>
-  <g fill="none" stroke="#ffb6c8" stroke-opacity=".23"><circle cx="420" cy="240" r="125"/><circle cx="420" cy="240" r="170"/><circle cx="420" cy="240" r="215"/><path d="M0 650H540M0 700H540M0 750H540" stroke-opacity=".08"/></g>
-  <rect x="34" y="34" width="472" height="892" rx="22" fill="none" stroke="#ffffff" stroke-opacity=".12"/>
-  <text x="58" y="86" fill="#f3f5f6" font-family="Arial,Helvetica,sans-serif" font-size="15" letter-spacing="4">GOKUL DAS KM</text>
-  <text x="58" y="810" fill="#ffb6c8" font-family="Arial,Helvetica,sans-serif" font-size="15" letter-spacing="4">SELECTED WORK / 02</text>
-  <text x="58" y="858" fill="#f3f5f6" font-family="Arial,Helvetica,sans-serif" font-size="34" font-weight="700" letter-spacing="-1.4">PET PROJECT</text>
-  <text x="58" y="891" fill="#aeb6bd" font-family="Arial,Helvetica,sans-serif" font-size="15" letter-spacing="1">Animated brand film</text>
-  <circle cx="270" cy="420" r="56" fill="#ffb6c8" fill-opacity=".12" stroke="#ffb6c8" stroke-opacity=".55"/>
-  <path d="M257 392L257 448L301 420Z" fill="#ffb6c8"/>
-  <text x="58" y="142" fill="#aeb6bd" font-family="Arial,Helvetica,sans-serif" font-size="11" letter-spacing="3">AI FILM  ·  CREATIVE STUDIO</text>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#20141b"/><stop offset="1" stop-color="#07090b"/></linearGradient>
+    <radialGradient id="halo" cx="0.75" cy="0.25" r="0.65"><stop offset="0" stop-color="#ffb6c8" stop-opacity=".26"/><stop offset="1" stop-color="#ffb6c8" stop-opacity="0"/></radialGradient>
+    <linearGradient id="sheen" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".08"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#ffb6c8" stop-opacity=".04"/></linearGradient>
+    <pattern id="grid" width="34" height="34" patternUnits="userSpaceOnUse"><path d="M34 0H0V34" fill="none" stroke="#fff" stroke-opacity=".035" stroke-width="1"/></pattern>
+  </defs>
+  <rect width="540" height="960" fill="url(#bg)"/>
+  <rect width="540" height="960" fill="url(#halo)"/>
+  <rect width="540" height="960" fill="url(#sheen)"/>
+  <rect width="540" height="960" fill="url(#grid)"/>
+  <g fill="none" stroke="#ffb6c8" stroke-opacity=".25">
+    <circle cx="420" cy="242" r="118"/><circle cx="420" cy="242" r="163"/><circle cx="420" cy="242" r="208"/><circle cx="420" cy="242" r="253" stroke-opacity=".09"/>
+    <path d="M0 644H540M0 684H540M0 724H540" stroke-opacity=".075"/>
+    <path d="M38 250H104M71 217V283" stroke-opacity=".32" stroke-width="1.2"/>
+  </g>
+  <rect x="24" y="24" width="492" height="912" rx="22" fill="none" stroke="#fff" stroke-opacity=".12"/>
+  <text x="48" y="71" fill="#f3f5f6" font-family="Arial,Helvetica,sans-serif" font-size="13" letter-spacing="3.4">GOKUL DAS KM</text>
+  <text x="48" y="99" fill="#aeb6bd" font-family="Arial,Helvetica,sans-serif" font-size="10" letter-spacing="2.2">AI FILM  ·  CREATIVE STUDIO</text>
+  <g transform="translate(270 464)">
+    <circle r="78" fill="#ffb6c8" fill-opacity=".045"/>
+    <circle r="65" fill="none" stroke="#ffb6c8" stroke-opacity=".13"/>
+    <circle r="51" fill="none" stroke="#ffb6c8" stroke-opacity=".12"/>
+    <circle r="34" fill="none" stroke="#fff" stroke-opacity=".08"/>
+  </g>
+  <path d="M48 862H492" stroke="#fff" stroke-opacity=".12"/>
+  <text x="48" y="895" fill="#ffb6c8" font-family="Arial,Helvetica,sans-serif" font-size="11" letter-spacing="3">SELECTED WORK</text>
 </svg>
