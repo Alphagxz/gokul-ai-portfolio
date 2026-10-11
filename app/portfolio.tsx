@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
+import Lenis from "@studio-freight/lenis";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -68,49 +69,91 @@ export default function Portfolio() {
   const showreel = useRef<HTMLVideoElement>(null);
   useEffect(() => {
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const lenis = reduceMotion
+      ? null
+      : new Lenis({
+          lerp: 0.085,
+          smoothWheel: true,
+          syncTouch: false,
+          wheelMultiplier: 0.9,
+        });
+
+    const updateLenis = lenis ? (time: number) => lenis.raf(time * 1000) : null;
+    if (lenis && updateLenis) {
+      lenis.on("scroll", ScrollTrigger.update);
+      gsap.ticker.add(updateLenis);
+      gsap.ticker.lagSmoothing(0);
+      (window as Window & { __portfolioLenis?: typeof lenis }).__portfolioLenis = lenis;
+    }
+
     const ctx = gsap.context(() => {
       if (!reduceMotion) {
-        gsap.fromTo(".hero-title span",
-          { yPercent: 115, rotateX: -8 },
-          { yPercent: 0, rotateX: 0, stagger: 0.12, duration: 1.25, ease: "power4.out", delay: 0.12 }
+        gsap.fromTo(
+          ".hero-title span",
+          { y: "0.42em", opacity: 0, rotateX: -4 },
+          {
+            y: 0,
+            opacity: 1,
+            rotateX: 0,
+            stagger: 0.14,
+            duration: 1.15,
+            ease: "power3.out",
+            delay: 0.1,
+            clearProps: "transform",
+          }
         );
-        gsap.fromTo(".hero-copy > *:not(.hero-title)",
-          { y: 24, opacity: 0 },
-          { y: 0, opacity: 1, stagger: 0.09, duration: 0.8, ease: "power3.out", delay: 0.35 }
+        gsap.fromTo(
+          ".hero-copy > *:not(.hero-title)",
+          { y: 18, opacity: 0 },
+          { y: 0, opacity: 1, stagger: 0.08, duration: 0.75, ease: "power2.out", delay: 0.28 }
         );
-        gsap.fromTo(".hero-metrics > div",
-          { y: 24, opacity: 0 },
-          { y: 0, opacity: 1, stagger: 0.1, duration: 0.7, ease: "power3.out", delay: 0.75 }
+        gsap.fromTo(
+          ".hero-metrics > div",
+          { y: 18, opacity: 0 },
+          { y: 0, opacity: 1, stagger: 0.1, duration: 0.65, ease: "power2.out", delay: 0.65 }
         );
 
         gsap.utils.toArray<HTMLElement>(".reveal, .project").forEach((el) => {
-          gsap.fromTo(el, { y: 56, opacity: 0, rotateX: 2 }, {
-            y: 0, opacity: 1, rotateX: 0, duration: 0.95, ease: "power3.out",
-            scrollTrigger: { trigger: el, start: "top 88%", once: true }
-          });
-        });
-        gsap.to(".hero-orbit", { rotate: 360, duration: 42, repeat: -1, ease: "none" });
-        gsap.to(".hero-glow", {
-          yPercent: 35, xPercent: -15,
-          scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: 1.2 }
-        });
-        gsap.to(".showreel-frame", {
-          scale: 0.9, borderRadius: 28,
-          scrollTrigger: { trigger: ".showreel", start: "top top", end: "bottom bottom", scrub: 1 }
-        });
-        gsap.to(".scroll-progress", {
-          scaleX: 1, ease: "none",
-          scrollTrigger: { trigger: document.documentElement, start: "top top", end: "bottom bottom", scrub: 0.15 }
+          gsap.fromTo(
+            el,
+            { y: 34, opacity: 0 },
+            {
+              y: 0,
+              opacity: 1,
+              duration: 0.9,
+              ease: "power2.out",
+              scrollTrigger: { trigger: el, start: "top 86%", once: true, fastScrollEnd: true },
+            }
+          );
         });
 
-        // A soft acid-lime light follows the pointer. No custom cursor, just atmosphere.
+        gsap.to(".hero-orbit", { rotate: 360, duration: 60, repeat: -1, ease: "none" });
+        gsap.to(".hero-glow", {
+          yPercent: 18,
+          xPercent: -8,
+          ease: "none",
+          scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: 0.8 },
+        });
+        // Keep the showreel frame stable. The old scale tween caused the page to feel like it was pulsing.
+        gsap.to(".showreel-frame", {
+          yPercent: -3,
+          ease: "none",
+          scrollTrigger: { trigger: ".showreel", start: "top bottom", end: "bottom top", scrub: 0.8 },
+        });
+        gsap.to(".scroll-progress", {
+          scaleX: 1,
+          ease: "none",
+          scrollTrigger: { trigger: document.documentElement, start: "top top", end: "bottom bottom", scrub: 0.6 },
+        });
+
         const glow = document.querySelector<HTMLElement>(".pointer-glow");
         if (glow) {
-          const xTo = gsap.quickTo(glow, "x", { duration: 0.55, ease: "power3" });
-          const yTo = gsap.quickTo(glow, "y", { duration: 0.55, ease: "power3" });
+          const xTo = gsap.quickTo(glow, "x", { duration: 0.38, ease: "power2.out" });
+          const yTo = gsap.quickTo(glow, "y", { duration: 0.38, ease: "power2.out" });
           const onMove = (event: PointerEvent) => {
-            xTo(event.clientX - 190);
-            yTo(event.clientY - 190);
+            if (event.pointerType === "touch") return;
+            xTo(event.clientX - 210);
+            yTo(event.clientY - 210);
             glow.style.opacity = "1";
           };
           const onLeave = () => { glow.style.opacity = "0"; };
@@ -122,22 +165,39 @@ export default function Portfolio() {
           });
         }
       } else {
-        gsap.set(".hero-title span", { yPercent: 0, rotateX: 0 });
+        gsap.set(".hero-title span", { y: 0, opacity: 1, rotateX: 0 });
         gsap.set(".hero-copy > *:not(.hero-title), .hero-metrics > div, .reveal, .project", { opacity: 1, y: 0 });
         gsap.set(".scroll-progress", { scaleX: 0 });
       }
     });
-    return () => ctx.revert();
+
+    // Refresh once layout and fonts have settled, so scroll-triggered motion starts at the right positions.
+    requestAnimationFrame(() => ScrollTrigger.refresh());
+
+    return () => {
+      ctx.revert();
+      if (lenis && updateLenis) {
+        gsap.ticker.remove(updateLenis);
+        lenis.destroy();
+        delete (window as Window & { __portfolioLenis?: typeof lenis }).__portfolioLenis;
+        gsap.ticker.lagSmoothing(500, 33);
+      }
+    };
   }, []);
 
   return (
     <main>
       <div className="scroll-progress" aria-hidden="true" />
       <div className="pointer-glow" aria-hidden="true" />
+      <a className="whatsapp-float" href="https://wa.me/919074512437?text=Hi%20Gokul%2C%20I%20came%20across%20your%20portfolio%20and%20would%20like%20to%20discuss%20a%20project." target="_blank" rel="noopener noreferrer" aria-label="Start a WhatsApp chat with Gokul">
+        <span className="whatsapp-float-mark" aria-hidden="true">WA</span>
+        <span>Let&apos;s talk</span>
+        <span className="whatsapp-float-arrow" aria-hidden="true">↗</span>
+      </a>
       <nav className="nav">
         <a href="#top" className="brand"><b>G</b><span>GOKUL DAS KM</span></a>
         <div className="nav-links"><a href="#work">Work</a><a href="#services">Capabilities</a><a href="#about">About</a></div>
-        <a className="nav-pill" href="mailto:gokuldas.km@gmail.com">Let's talk</a>
+        <a className="nav-pill" href="mailto:garciaalpha007@gmail.com">Let's talk</a>
       </nav>
 
       <section id="top" className="hero">
@@ -147,7 +207,7 @@ export default function Portfolio() {
           <p className="eyebrow">AI CONTENT CREATOR · AI VIDEO PRODUCER · AI UGC</p>
           <h1 className="hero-title"><span>I make ads</span><span>with AI.</span></h1>
           <p className="hero-sub">Generative video, AI UGC and performance creative for brands that need ideas to move faster.</p>
-          <div className="hero-actions"><a className="primary" href="#work">Explore work</a><a className="underlink" href="mailto:gokuldas.km@gmail.com">Available globally ↗</a></div>
+          <div className="hero-actions"><a className="primary" href="#work">Explore work</a><a className="underlink" href="mailto:garciaalpha007@gmail.com">Available globally ↗</a></div>
         </div>
         <div className="hero-metrics"><div><strong>300+</strong><small>AI videos</small></div><div><strong>1.5+</strong><small>years with AI</small></div><div><strong>15+</strong><small>brands & clients</small></div></div>
       </section>
@@ -197,14 +257,21 @@ export default function Portfolio() {
         <div className="about-copy reveal">
           <p>I’m Gokul Das KM, an AI content creator and video producer focused on generative advertising, AI UGC and short-form creative.</p>
           <p>I’ve produced 300+ AI videos across agency, freelance and studio work, including Trifid Media, TripleSpeed and K12 Ad Labs.</p>
-          <div className="socials"><a href="https://www.linkedin.com" target="_blank">LinkedIn ↗</a><a href="https://www.instagram.com/gokulgxz" target="_blank">Instagram ↗</a><a href="mailto:gokuldas.km@gmail.com">Email ↗</a></div>
+          <div className="socials"><a href="https://www.linkedin.com/in/gokul-das-k-m-728795348/" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a><a href="https://www.instagram.com/gokulgxz/" target="_blank" rel="noopener noreferrer">Instagram ↗</a><a href="mailto:garciaalpha007@gmail.com">Email ↗</a><a href="https://wa.me/919074512437?text=Hi%20Gokul%2C%20I%20came%20across%20your%20portfolio%20and%20would%20like%20to%20discuss%20a%20project." target="_blank" rel="noopener noreferrer">WhatsApp ↗</a><a href="tel:+919074512437">+91 90745 12437 ↗</a></div>
         </div>
       </section>
 
       <section className="contact">
         <p className="eyebrow">GLOBAL / REMOTE</p>
         <h2>Have an idea<br/><em>worth making?</em></h2>
-        <a href="mailto:gokuldas.km@gmail.com" className="contact-button">Start a project ↗</a>
+        <a href="mailto:garciaalpha007@gmail.com" className="contact-button">Start a project ↗</a>
+        <div className="contact-methods" aria-label="Contact links">
+          <a href="mailto:garciaalpha007@gmail.com">garciaalpha007@gmail.com</a>
+          <a href="tel:+919074512437">+91 90745 12437</a>
+          <a href="https://wa.me/919074512437?text=Hi%20Gokul%2C%20I%20came%20across%20your%20portfolio%20and%20would%20like%20to%20discuss%20a%20project." target="_blank" rel="noopener noreferrer">WhatsApp ↗</a>
+          <a href="https://www.linkedin.com/in/gokul-das-k-m-728795348/" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a>
+          <a href="https://www.instagram.com/gokulgxz/" target="_blank" rel="noopener noreferrer">Instagram ↗</a>
+        </div>
       </section>
 
       <footer><span>GOKUL DAS KM</span><span>AI CONTENT · VIDEO · UGC</span><span>BANGALORE / GLOBAL</span></footer>
