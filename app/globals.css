@@ -957,3 +957,248 @@ main > section { position:relative; z-index:1; }
   .showreel-slide { flex-basis: min(72vw, 250px); }
   .showreel-video-frame { height: min(52vh, 430px); }
 }
+
+/* Showreel player fix: keep the native player visible and put the title/play action in the center. */
+.showreel-video-frame {
+  position: relative !important;
+  isolation: isolate;
+  overflow: hidden;
+  background: #09080f;
+  border-color: rgba(220, 207, 255, .18);
+}
+.showreel-video-frame .showreel-video,
+.showreel-video-frame .showreel-video:not(.is-loaded) {
+  position: absolute !important;
+  inset: 0;
+  z-index: 1;
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  object-fit: contain !important;
+  object-position: center;
+  background: #09080f;
+  pointer-events: auto !important;
+}
+.showreel-title-overlay {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 22px 16px;
+  text-align: center;
+  color: #fff;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, rgba(9, 8, 15, .36), rgba(9, 8, 15, .04) 76%);
+  transition: opacity .28s ease, visibility .28s ease;
+}
+.showreel-title-overlay > strong {
+  max-width: 100%;
+  color: #fff;
+  font-size: clamp(25px, 2.1vw, 34px);
+  font-weight: 800;
+  line-height: .98;
+  letter-spacing: -.065em;
+  text-shadow: 0 2px 24px rgba(0, 0, 0, .5);
+  text-wrap: balance;
+}
+.showreel-overlay-index,
+.showreel-overlay-type,
+.showreel-play-label {
+  color: rgba(246, 241, 255, .78);
+  font: 8px "DM Mono", monospace;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 14px rgba(0, 0, 0, .6);
+}
+.showreel-overlay-type { max-width: 28ch; line-height: 1.6; }
+.showreel-center-play {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  margin-top: 9px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, .58);
+  border-radius: 50%;
+  color: #fff;
+  background: rgba(20, 16, 34, .6);
+  box-shadow: 0 0 0 7px rgba(214, 192, 255, .08), inset 0 1px rgba(255, 255, 255, .2), 0 10px 35px rgba(0, 0, 0, .25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  pointer-events: auto;
+  cursor: pointer;
+  transition: transform .2s ease, background .2s ease, border-color .2s ease;
+}
+.showreel-center-play span { display: block; margin-left: 3px; font-size: 16px; line-height: 1; }
+.showreel-center-play:hover { transform: scale(1.07); background: rgba(142, 105, 223, .55); border-color: #fff; }
+.showreel-play-label { margin-top: -2px; font-size: 7px; letter-spacing: .12em; }
+.showreel-video-frame.is-playing .showreel-title-overlay {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.showreel-video-frame.has-error .showreel-title-overlay { opacity: 1; visibility: visible; }
+.showreel-video-frame.has-error .showreel-play-label { color: #e0cfff; }
+.showreel-slide { gap: 0 !important; }
+
+/* Two unboxed, open-space slime toys. Dragging stretches them along the pull direction. */
+.goo-playground {
+  position: absolute;
+  z-index: 4;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+  touch-action: none;
+}
+.goo-toy {
+  --goo-size: 138px;
+  position: absolute;
+  display: block;
+  width: var(--goo-size);
+  height: var(--goo-size);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+  touch-action: none;
+  cursor: grab;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  outline: none;
+}
+.goo-toy--pearl { --goo-size: 94px; }
+.goo-toy:active,
+.goo-toy.is-dragging { cursor: grabbing; }
+.goo-toy:focus-visible { outline: 1px solid rgba(228, 210, 255, .72); outline-offset: 9px; }
+.goo-toy-body {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid rgba(247, 236, 255, .65);
+  border-radius: 43% 57% 52% 48% / 48% 43% 57% 52%;
+  background:
+    radial-gradient(ellipse at 28% 19%, rgba(255,255,255,.98) 0 3%, rgba(235,219,255,.96) 6%, rgba(177,139,255,.96) 16%, transparent 32%),
+    radial-gradient(ellipse at 72% 78%, rgba(25,17,61,.94), transparent 51%),
+    radial-gradient(ellipse at 53% 45%, #a17bff 0%, #7754d9 30%, #30204f 70%, #0f0a1a 100%);
+  box-shadow: inset -18px -19px 27px rgba(5, 3, 17, .55), inset 10px 9px 20px rgba(255,255,255,.22), 0 0 28px rgba(156, 112, 255, .3), 0 16px 38px rgba(0,0,0,.22);
+  transform-origin: 50% 50%;
+  transition: transform .38s cubic-bezier(.18, 1.65, .32, 1), border-radius .34s ease, filter .28s ease, box-shadow .28s ease;
+  will-change: transform, border-radius;
+}
+.goo-toy-body::before,
+.goo-toy-body::after {
+  position: absolute;
+  content: "";
+  pointer-events: none;
+}
+.goo-toy-body::before {
+  inset: 7% 13% 13% 8%;
+  border: 1px solid rgba(255,255,255,.24);
+  border-radius: 42% 58% 54% 46% / 52% 42% 58% 48%;
+  transform: rotate(-24deg);
+  box-shadow: inset 0 0 13px rgba(255,255,255,.08);
+}
+.goo-toy-body::after {
+  inset: 0;
+  opacity: .74;
+  background: linear-gradient(118deg, transparent 20%, rgba(255,255,255,.16) 28%, transparent 37%, rgba(166,124,255,.25) 56%, transparent 69%);
+  mix-blend-mode: screen;
+}
+.goo-toy-gloss {
+  position: absolute;
+  display: block;
+  z-index: 1;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.goo-toy-gloss--one {
+  top: 11%; left: 17%;
+  width: 31%; height: 12%;
+  background: rgba(255,255,255,.9);
+  filter: blur(5px);
+  transform: rotate(-35deg);
+}
+.goo-toy-gloss--two {
+  right: 15%; bottom: 18%;
+  width: 8%; height: 24%;
+  background: rgba(177,222,255,.77);
+  filter: blur(4px);
+  transform: rotate(31deg);
+}
+.goo-toy-core {
+  position: absolute;
+  inset: 27% 23% 23% 27%;
+  border-radius: 48% 52% 58% 42%;
+  background: radial-gradient(ellipse at 32% 25%, rgba(255,255,255,.35), rgba(183,149,255,.12) 30%, transparent 67%);
+  filter: blur(8px);
+  pointer-events: none;
+}
+.goo-toy--pearl .goo-toy-body {
+  border-color: rgba(220, 244, 255, .72);
+  background:
+    radial-gradient(ellipse at 29% 19%, #fff 0 3%, rgba(226,244,255,.94) 7%, rgba(165,218,255,.78) 17%, transparent 34%),
+    radial-gradient(ellipse at 69% 72%, rgba(145,92,255,.87), transparent 49%),
+    radial-gradient(ellipse at 48% 45%, #d9caff 0%, #83aeea 27%, #544080 66%, #141020 100%);
+  box-shadow: inset -12px -13px 20px rgba(6, 6, 23, .54), inset 7px 6px 14px rgba(255,255,255,.26), 0 0 25px rgba(117, 194, 255, .25), 0 12px 31px rgba(0,0,0,.2);
+}
+.goo-toy--pearl .goo-toy-gloss--one { width: 35%; height: 14%; }
+.goo-toy.is-dragging .goo-toy-body { transition: none; filter: saturate(1.18) brightness(1.08); box-shadow: inset -18px -19px 27px rgba(5,3,17,.46), inset 10px 9px 20px rgba(255,255,255,.27), 0 0 38px rgba(156,112,255,.43), 0 18px 42px rgba(0,0,0,.25); }
+.goo-toy.is-dragging .goo-toy-body::before { border-radius: 55% 45% 43% 57% / 47% 55% 45% 53%; }
+.goo-playground-hint {
+  position: absolute;
+  right: 7vw;
+  bottom: 10%;
+  color: rgba(223, 206, 255, .38);
+  font: 7px "DM Mono", monospace;
+  letter-spacing: .15em;
+  pointer-events: none;
+  white-space: nowrap;
+}
+@media (max-width: 1050px) {
+  .goo-toy { --goo-size: 116px; }
+  .goo-toy--pearl { --goo-size: 82px; }
+}
+@media (max-width: 850px) {
+  .goo-playground {
+    position: relative;
+    inset: auto;
+    z-index: 3;
+    width: 100%;
+    height: 220px;
+    flex: 0 0 220px;
+    margin: 14px 0 -12px;
+    pointer-events: none;
+  }
+  .goo-toy { --goo-size: 100px; }
+  .goo-toy--pearl { --goo-size: 72px; }
+  .goo-playground-hint { right: 5%; bottom: 3%; }
+}
+@media (max-width: 520px) {
+  .showreel-heading .showreel-instruction { max-width: 100%; }
+  .showreel-video-frame { height: min(56vh, 440px) !important; }
+  .showreel-title-overlay { gap: 8px; padding: 18px 12px; }
+  .showreel-title-overlay > strong { font-size: clamp(24px, 7vw, 32px); }
+  .showreel-center-play { width: 52px; height: 52px; }
+  .goo-playground { height: 210px; flex-basis: 210px; }
+  .goo-toy { --goo-size: 90px; }
+  .goo-toy--pearl { --goo-size: 65px; }
+  .goo-playground-hint { font-size: 6px; letter-spacing: .1em; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .showreel-title-overlay,
+  .showreel-center-play,
+  .goo-toy-body { transition: none !important; }
+}
