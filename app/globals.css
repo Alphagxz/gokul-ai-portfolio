@@ -1542,3 +1542,152 @@ main > section { position:relative; z-index:1; }
 .jelly-splash:not(.is-active) i { animation: none !important; opacity: 0 !important; }
 .jelly-ripple { z-index: 0; }
 .jelly-ripple:not(.is-active) { animation: none !important; opacity: 0 !important; }
+
+
+/* Edge-grab jelly physics: visibly elastic, anchored stretch with liquid recoil. */
+.jelly-toy.is-dragging .jelly-shape {
+  filter: drop-shadow(0 0 28px rgba(166,124,255,.5)) saturate(1.12);
+}
+.jelly-toy.is-dragging .jelly-body-path {
+  stroke-width: 1.55;
+}
+.jelly-toy.is-dragging .jelly-surface-sheen {
+  opacity: .78;
+}
+.jelly-splash i {
+  width: 6px;
+  height: 11px;
+  filter: blur(.1px);
+}
+.jelly-splash i:nth-child(3n) {
+  width: 9px;
+  height: 6px;
+  border-radius: 65% 35% 60% 40%;
+}
+.jelly-ripple {
+  width: 66%;
+  height: 34%;
+  filter: blur(.3px);
+}
+
+
+/* Particle Playground: a second open-space interaction, sharing the hero's free area. */
+.playground-experience-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid rgba(218,202,255,.16);
+  border-radius: 999px;
+  background: rgba(11,9,20,.32);
+  backdrop-filter: blur(9px);
+  -webkit-backdrop-filter: blur(9px);
+}
+.playground-experience-switch button {
+  border: 0;
+  border-radius: 999px;
+  padding: 7px 9px;
+  color: rgba(226,218,244,.52);
+  background: transparent;
+  font: 7px "DM Mono", monospace;
+  letter-spacing: .13em;
+  cursor: pointer;
+  transition: color .2s ease, background .2s ease;
+}
+.playground-experience-switch button:hover,
+.playground-experience-switch button.is-active {
+  color: #f7f2ff;
+  background: rgba(160,127,255,.2);
+}
+.particle-playground {
+  position: absolute;
+  z-index: 2;
+  inset: 0 0 0 47%;
+  overflow: visible;
+  pointer-events: auto;
+  touch-action: pan-y;
+  isolation: isolate;
+}
+.particle-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+  touch-action: pan-y;
+}
+.particle-playground-label {
+  position: absolute;
+  z-index: 2;
+  top: 17%;
+  right: 8%;
+  display: grid;
+  gap: 7px;
+  text-align: right;
+  pointer-events: none;
+}
+.particle-playground-label span {
+  color: rgba(226,211,255,.76);
+  font: 8px "DM Mono", monospace;
+  letter-spacing: .18em;
+}
+.particle-playground-label small {
+  color: rgba(178,185,201,.48);
+  font: 6px "DM Mono", monospace;
+  letter-spacing: .12em;
+}
+.particle-mode-controls {
+  position: absolute;
+  z-index: 3;
+  right: 7.5%;
+  top: 24%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 5px;
+  max-width: 230px;
+  pointer-events: auto;
+}
+.particle-mode-controls button {
+  border: 1px solid rgba(198,179,255,.18);
+  border-radius: 999px;
+  padding: 7px 9px;
+  color: rgba(218,211,235,.58);
+  background: rgba(17,13,30,.24);
+  font: 7px "DM Mono", monospace;
+  letter-spacing: .12em;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: color .18s ease, border-color .18s ease, background .18s ease, transform .18s ease;
+}
+.particle-mode-controls button:hover { color: #fff; border-color: rgba(218,201,255,.55); transform: translateY(-1px); }
+.particle-mode-controls button.is-active { color: #f6f0ff; border-color: rgba(178,150,255,.54); background: rgba(139,102,219,.23); }
+.particle-mode-controls button.particle-reset { color: rgba(190,232,234,.62); }
+.goo-playground.is-particles-mode .goo-playground-note { bottom: 7%; gap: 8px; }
+.goo-playground.is-particles-mode .goo-playground-hint { display: none; }
+@media (max-width: 850px) {
+  .particle-playground { inset: 0; }
+  .particle-playground-label { top: 8px; right: 6%; gap: 4px; }
+  .particle-playground-label span { font-size: 7px; }
+  .particle-playground-label small { font-size: 5px; }
+  .particle-mode-controls { top: 40px; right: 6%; max-width: 220px; gap: 4px; }
+  .particle-mode-controls button { padding: 6px 7px; font-size: 6px; }
+  .goo-playground.is-particles-mode .goo-playground-note { left: 3%; right: 3%; bottom: 4%; justify-content: space-between; gap: 7px; }
+  .playground-experience-switch button { padding: 7px 8px; }
+}
+@media (max-width: 520px) {
+  .particle-mode-controls { top: 42px; right: 4%; max-width: 190px; }
+  .particle-playground-label { left: 4%; right: auto; top: 10px; text-align: left; }
+  .particle-playground-label span { font-size: 6px; }
+  .particle-playground-label small { font-size: 5px; }
+  .goo-playground.is-particles-mode .goo-playground-note { flex-wrap: wrap; }
+  .playground-experience-switch button { font-size: 6px; padding: 6px 7px; }
+  .goo-sound-toggle { font-size: 6px; padding: 6px 7px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .playground-experience-switch button,
+  .particle-mode-controls button { transition: none !important; }
+}
