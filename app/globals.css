@@ -180,3 +180,205 @@ body { overflow-x: hidden; }
 .cursor-trail-dot--5 { width: 2px; height: 2px; }
 @media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) { .cursor-trail { display: none !important; } }
 @media (prefers-reduced-motion: reduce) { .project-placeholder, .project-media video { transition: none !important; } }
+
+/* Final media behavior: preserve original framing and expose real player controls. */
+.project-media {
+  aspect-ratio: 9 / 16 !important;
+  background: #050607;
+  overflow: hidden;
+  border-radius: 16px;
+}
+.project--wide .project-media {
+  aspect-ratio: 16 / 9 !important;
+}
+.project-media video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain !important;
+  object-position: center;
+  background: #050607;
+  opacity: 0;
+  display: block;
+  pointer-events: auto;
+  z-index: 1;
+}
+.project-media.is-ready video { opacity: 1; }
+.project-placeholder,
+.project-shade,
+.project-type,
+.project-index { pointer-events: none !important; }
+.project-media.is-ready .project-placeholder { opacity: 0; visibility: hidden; }
+.project-media .project-shade { z-index: 2; }
+.project-media .project-type,
+.project-media .project-index { z-index: 3; }
+
+/* Horizontal, pinned 01â€“08 showreel. Each source stays in its native aspect ratio. */
+.showreel {
+  position: relative;
+  height: 100svh;
+  min-height: 680px;
+  padding: 0 !important;
+  margin: 0;
+  overflow: hidden;
+  background: #07090b;
+  z-index: 2;
+}
+.showreel-pin {
+  position: relative;
+  width: 100%;
+  height: 100svh;
+  min-height: 680px;
+  padding: clamp(88px, 10vh, 112px) 5vw 26px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  background: #07090b;
+}
+.showreel-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 36px;
+  flex: 0 0 auto;
+  margin-bottom: 22px;
+}
+.showreel-heading h2 {
+  margin: 0;
+  font-size: clamp(38px, 5vw, 70px);
+  line-height: .88;
+  letter-spacing: -.075em;
+}
+.showreel-heading h2 em {
+  font-style: normal;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(242,244,245,.6);
+}
+.showreel-instruction {
+  max-width: 330px;
+  margin: 0 0 4px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.showreel-track {
+  display: flex;
+  align-items: center;
+  gap: clamp(18px, 2.5vw, 38px);
+  width: max-content;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 0 1px;
+  will-change: transform;
+}
+.showreel-slide {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  justify-content: center;
+  gap: 13px;
+  width: auto;
+  min-width: 0;
+}
+.showreel-video-frame {
+  position: relative;
+  height: min(51vh, 510px);
+  aspect-ratio: 9 / 16;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 14px;
+  background: #020303;
+  box-shadow: 0 18px 60px rgba(0,0,0,.22);
+}
+.showreel-slide--landscape .showreel-video-frame {
+  aspect-ratio: 16 / 9;
+  height: min(35vh, 390px);
+}
+.showreel-video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain !important;
+  object-position: center;
+  background: #020303;
+}
+.showreel-slide-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+.showreel-slide-meta span,
+.showreel-footer {
+  color: var(--muted);
+  font: 9px "DM Mono", monospace;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+.showreel-slide-meta strong {
+  font-size: clamp(17px, 1.5vw, 22px);
+  letter-spacing: -.045em;
+  line-height: 1.1;
+}
+.showreel-footer {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 17px;
+  flex: 0 0 auto;
+}
+.showreel-footer b { color: var(--acid); font-size: 15px; margin-left: 8px; }
+
+/* Native video controls are interactive; overlays must never intercept them. */
+.showreel-video-frame video,
+.project-media video { pointer-events: auto; }
+.showreel-video-frame:after { content: none !important; }
+
+@media (max-width: 850px) {
+  .showreel {
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+  }
+  .showreel-pin {
+    height: auto;
+    min-height: 0;
+    padding: 100px 24px 28px;
+    overflow: visible;
+  }
+  .showreel-heading {
+    display: block;
+    margin-bottom: 28px;
+  }
+  .showreel-heading h2 { font-size: clamp(42px, 10vw, 66px); }
+  .showreel-instruction { margin-top: 20px; }
+  .showreel-track {
+    width: 100%;
+    flex: 0 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0 0 16px;
+    gap: 16px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    transform: none !important;
+  }
+  .showreel-slide { scroll-snap-align: start; }
+  .showreel-video-frame { height: min(54vh, 470px); }
+  .showreel-slide--landscape .showreel-video-frame { height: auto; width: min(78vw, 620px); aspect-ratio: 16 / 9; }
+  .showreel-footer { padding-top: 16px; }
+}
+@media (max-width: 520px) {
+  .project-media { border-radius: 13px; }
+  .showreel-pin { padding-left: 18px; padding-right: 18px; }
+  .showreel-video-frame { height: 52vh; max-height: 430px; }
+  .showreel-slide--landscape .showreel-video-frame { width: 82vw; height: auto; }
+  .showreel-slide-meta span { font-size: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .showreel-track { will-change: auto; }
+  .showreel-video-frame { scroll-behavior: auto; }
+}
