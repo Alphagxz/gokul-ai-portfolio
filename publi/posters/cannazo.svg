@@ -1,6 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900">
-<rect width="1200" height="900" fill="#0b0e10"/>
-<circle cx="950" cy="100" r="420" fill="#c9ff42" opacity=".11"/>
-<text x="70" y="730" fill="#f2f4f5" font-family="Arial,sans-serif" font-size="72" font-weight="800">CANNAZO</text>
-<text x="72" y="780" fill="#c9ff42" font-family="monospace" font-size="18" letter-spacing="3">AI PRODUCT FILM</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="540" height="960" viewBox="0 0 540 960">
+  <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#14200d"/><stop offset="1" stop-color="#07090b"/></linearGradient><radialGradient id="halo"><stop offset="0" stop-color="#b9f56e" stop-opacity=".22"/><stop offset="1" stop-color="#b9f56e" stop-opacity="0"/></radialGradient></defs>
+  <rect width="540" height="960" fill="url(#bg)"/><circle cx="405" cy="235" r="270" fill="url(#halo)"/>
+  <g fill="none" stroke="#b9f56e" stroke-opacity=".23"><circle cx="420" cy="240" r="125"/><circle cx="420" cy="240" r="170"/><circle cx="420" cy="240" r="215"/><path d="M0 650H540M0 700H540M0 750H540" stroke-opacity=".08"/></g>
+  <rect x="34" y="34" width="472" height="892" rx="22" fill="none" stroke="#ffffff" stroke-opacity=".12"/>
+  <text x="58" y="86" fill="#f3f5f6" font-family="Arial,Helvetica,sans-serif" font-size="15" letter-spacing="4">GOKUL DAS KM</text>
+  <text x="58" y="810" fill="#b9f56e" font-family="Arial,Helvetica,sans-serif" font-size="15" letter-spacing="4">SELECTED WORK / 08</text>
+  <text x="58" y="858" fill="#f3f5f6" font-family="Arial,Helvetica,sans-serif" font-size="34" font-weight="700" letter-spacing="-1.4">CANNAZO</text>
+  <text x="58" y="891" fill="#aeb6bd" font-family="Arial,Helvetica,sans-serif" font-size="15" letter-spacing="1">AI product film</text>
+  <circle cx="270" cy="420" r="56" fill="#b9f56e" fill-opacity=".12" stroke="#b9f56e" stroke-opacity=".55"/>
+  <path d="M257 392L257 448L301 420Z" fill="#b9f56e"/>
+  <text x="58" y="142" fill="#aeb6bd" font-family="Arial,Helvetica,sans-serif" font-size="11" letter-spacing="3">AI FILM  ·  CREATIVE STUDIO</text>
 </svg>
