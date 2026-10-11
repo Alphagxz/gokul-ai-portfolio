@@ -1,6 +1,6 @@
  "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import Lenis from "@studio-freight/lenis";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -46,16 +46,58 @@ const projects: PortfolioProject[] = [
 
 function Project({ p }: { p: PortfolioProject }) {
   const ref = useRef<HTMLVideoElement>(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const video = ref.current;
+    if (!video || !p.src) return;
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          if (!video.getAttribute("src")) {
+            video.src = p.src!;
+            video.load();
+          }
+          video.play().catch(() => {});
+        } else {
+          video.pause();
+        }
+      });
+    }, { rootMargin: "180px 0px", threshold: 0.05 });
+    observer.observe(video);
+    const onLoadedData = () => setReady(true);
+    const onError = () => setReady(false);
+    video.addEventListener("loadeddata", onLoadedData);
+    video.addEventListener("error", onError);
+    return () => {
+      observer.disconnect();
+      video.removeEventListener("loadeddata", onLoadedData);
+      video.removeEventListener("error", onError);
+      video.pause();
+    };
+  }, [p.src]);
+
   return (
     <article className={`project project--${p.size} ${p.caseStudy ? "project--case-study" : ""}`}>
-      <div className="project-media">
-        <video ref={ref} src={p.src ?? `/videos/${p.file}`} poster={p.poster ? `/posters/${p.poster}` : undefined} muted loop playsInline preload="metadata"
-          onPointerEnter={() => { if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) ref.current?.play().catch(()=>{}); }}
-          onPointerLeave={() => { if (ref.current) { ref.current.pause(); ref.current.currentTime = 0; } }}
+      <div className={`project-media ${ready ? "is-ready" : "is-pending"}`}>
+        <div className="project-placeholder" aria-hidden="true">
+          <span className="placeholder-kicker">AI FILM / SELECTED WORK</span>
+          <strong>{p.title}</strong>
+          <span className="placeholder-type">{p.type}</span>
+          <span className="placeholder-mark">G<span>·</span></span>
+        </div>
+        <video
+          ref={ref}
+          data-video-src={p.src ?? `/videos/${p.file}`}
+          muted
+          loop
+          playsInline
+          preload="none"
+          aria-label={`${p.title} video preview`}
         />
         <div className="project-shade" />
         <span className="project-type">{p.caseStudy ? "CASE STUDY · " : ""}{p.type}</span>
-        <span className="project-index">{String(projects.indexOf(p)+1).padStart(2,"0")}</span>
+        <span className="project-index">{String(projects.indexOf(p) + 1).padStart(2, "0")}</span>
       </div>
       <div className="project-caption"><h3>{p.title}</h3><span>{p.caseStudy ? "Featured case study ↗" : "Selected work ↗"}</span></div>
       {p.caseStudy && (
@@ -69,17 +111,29 @@ function Project({ p }: { p: PortfolioProject }) {
   );
 }
 
+const showreelClips = [
+  "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/cannazo%20herovF.mp4",
+  "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/pet%20project%20spa%20Animated.mp4",
+  "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/cheaterscanner%20v22.mp4",
+  "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/rumik%20ira.MP4",
+  "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/Adukale%20Khara%20chakkli.mp4",
+  "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/Copy%20of%20Copy%20of%20Tripsniper%20AD%20Reel%204.mp4",
+  "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/money%20pilot%20v43.mp4",
+];
+
 export default function Portfolio() {
   const showreel = useRef<HTMLVideoElement>(null);
+  const [showreelIndex, setShowreelIndex] = useState(0);
+  const lastClipChange = useRef(-1);
   useEffect(() => {
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const lenis = reduceMotion
       ? null
       : new Lenis({
-          lerp: 0.085,
+          lerp: 0.14,
           smoothWheel: true,
           syncTouch: false,
-          wheelMultiplier: 0.9,
+          wheelMultiplier: 0.85,
         });
 
     const updateLenis = lenis ? (time: number) => lenis.raf(time * 1000) : null;
@@ -93,7 +147,7 @@ export default function Portfolio() {
     // Keep native event-listener cleanup outside the GSAP context callback.
     // The context callback runs immediately, so calling ctx.add() inside it
     // would access `ctx` before the const assignment has completed.
-    let cleanupPointer = () => {};
+    let cleanupCursor = () => {};
     const ctx = gsap.context(() => {
       if (!reduceMotion) {
         gsap.fromTo(
@@ -142,36 +196,46 @@ export default function Portfolio() {
           ease: "none",
           scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: 0.8 },
         });
-        // Keep the showreel frame stable. The old scale tween caused the page to feel like it was pulsing.
-        gsap.to(".showreel-frame", {
-          yPercent: -3,
-          ease: "none",
-          scrollTrigger: { trigger: ".showreel", start: "top bottom", end: "bottom top", scrub: 0.8 },
-        });
+        // Cinematic sticky reel: subtle horizontal drift, never a zoom-bounce.
+        gsap.fromTo(".showreel-frame",
+          { yPercent: 4, borderRadius: "24px" },
+          { yPercent: -4, borderRadius: "10px", ease: "none",
+            scrollTrigger: { trigger: ".showreel", start: "top bottom", end: "bottom top", scrub: 1.2 } }
+        );
+        gsap.fromTo(".showreel-copy",
+          { y: 24, opacity: 0.55 },
+          { y: 0, opacity: 1, ease: "none",
+            scrollTrigger: { trigger: ".showreel", start: "top 70%", end: "center 35%", scrub: 0.8 } }
+        );
         gsap.to(".scroll-progress", {
           scaleX: 1,
           ease: "none",
           scrollTrigger: { trigger: document.documentElement, start: "top top", end: "bottom bottom", scrub: 0.6 },
         });
 
-        const glow = document.querySelector<HTMLElement>(".pointer-glow");
-        if (glow) {
-          const xTo = gsap.quickTo(glow, "x", { duration: 0.38, ease: "power2.out" });
-          const yTo = gsap.quickTo(glow, "y", { duration: 0.38, ease: "power2.out" });
+        // Lightweight cursor trail: no giant blur layer and no always-running RAF loop.
+        const dots = Array.from(document.querySelectorAll<HTMLElement>(".cursor-trail-dot"));
+        if (dots.length && window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+          const xSetters = dots.map((dot, i) => gsap.quickTo(dot, "x", { duration: 0.08 + i * 0.055, ease: "power2.out" }));
+          const ySetters = dots.map((dot, i) => gsap.quickTo(dot, "y", { duration: 0.08 + i * 0.055, ease: "power2.out" }));
           const onMove = (event: PointerEvent) => {
             if (event.pointerType === "touch") return;
-            xTo(event.clientX - 210);
-            yTo(event.clientY - 210);
-            glow.style.opacity = "1";
+            dots.forEach((dot, i) => {
+              xSetters[i](event.clientX);
+              ySetters[i](event.clientY);
+              dot.style.opacity = String(Math.max(0.12, 0.95 - i * 0.14));
+            });
           };
-          const onLeave = () => { glow.style.opacity = "0"; };
+          const onLeave = () => dots.forEach((dot) => { dot.style.opacity = "0"; });
           window.addEventListener("pointermove", onMove, { passive: true });
           document.documentElement.addEventListener("pointerleave", onLeave);
-          cleanupPointer = () => {
+          cleanupCursor = () => {
             window.removeEventListener("pointermove", onMove);
             document.documentElement.removeEventListener("pointerleave", onLeave);
           };
         }
+
+
       } else {
         gsap.set(".hero-title span", { y: 0, opacity: 1, rotateX: 0 });
         gsap.set(".hero-copy > *:not(.hero-title), .hero-metrics > div, .reveal, .project", { opacity: 1, y: 0 });
@@ -183,7 +247,7 @@ export default function Portfolio() {
     requestAnimationFrame(() => ScrollTrigger.refresh());
 
     return () => {
-      cleanupPointer();
+      cleanupCursor();
       ctx.revert();
       if (lenis && updateLenis) {
         gsap.ticker.remove(updateLenis);
@@ -197,7 +261,9 @@ export default function Portfolio() {
   return (
     <main>
       <div className="scroll-progress" aria-hidden="true" />
-      <div className="pointer-glow" aria-hidden="true" />
+      <div className="cursor-trail" aria-hidden="true">
+        {Array.from({ length: 5 }, (_, i) => <span className={`cursor-trail-dot cursor-trail-dot--${i + 1}`} key={i} />)}
+      </div>
       <a className="whatsapp-float" href="https://wa.me/919074512437?text=Hi%20Gokul%2C%20I%20came%20across%20your%20portfolio%20and%20would%20like%20to%20discuss%20a%20project." target="_blank" rel="noopener noreferrer" aria-label="Start a WhatsApp chat with Gokul">
         <span className="whatsapp-float-mark" aria-hidden="true">WA</span>
         <span>Let&apos;s talk</span>
@@ -223,9 +289,22 @@ export default function Portfolio() {
 
       <section className="showreel">
         <div className="showreel-frame">
-          <video ref={showreel} src="/videos/showreel.mp4" poster="/posters/showreel.svg" autoPlay muted loop playsInline />
+          <video
+            key={showreelIndex}
+            ref={showreel}
+            src={showreelClips[showreelIndex]}
+            autoPlay muted playsInline preload="metadata"
+            onTimeUpdate={(event) => {
+              const video = event.currentTarget;
+              if (video.currentTime >= 4.2 && lastClipChange.current !== showreelIndex) {
+                lastClipChange.current = showreelIndex;
+                setShowreelIndex((index) => (index + 1) % showreelClips.length);
+              }
+            }}
+            onError={() => setShowreelIndex((index) => (index + 1) % showreelClips.length)}
+          />
           <div className="showreel-copy"><span>SELECTED SHOWREEL</span><strong>Ideas, generated.</strong></div>
-          <div className="showreel-count">SCROLL / 01—08</div>
+          <div className="showreel-count">SCROLL / SELECTED CLIPS</div>
         </div>
       </section>
 
