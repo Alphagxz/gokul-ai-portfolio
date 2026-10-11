@@ -19,19 +19,19 @@ type PortfolioProject = {
 
 const projects: PortfolioProject[] = [
   {
-    title: "MoneyPilot", type: "AI UGC · Performance Advertising", file: "moneypilot.mp4", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/money%20pilot%20v43.mp4", poster: "moneypilot.svg", size: "tall",
+    title: "MoneyPilot", type: "AI UGC · Performance Advertising", file: "moneypilot.mp4", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/money%20pilot%20v43.mp4", poster: "moneypilot.jpg", size: "tall",
     caseStudy: { focus: "Performance-led financial product creative.", approach: "Creator-style short-form storytelling with a clear opening hook and concise product messaging.", tags: ["AI UGC", "Paid Social", "Hook-led Creative"] }
   },
   {
-    title: "Pet Project", type: "AI Animated Brand Film", file: "pet-project.mp4", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/pet%20project%20spa%20Animated.mp4", poster: "pet-project.svg", size: "tall",
+    title: "Pet Project", type: "AI Animated Brand Film", file: "pet-project.mp4", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/pet%20project%20spa%20Animated.mp4", poster: "pet-project.jpg", size: "tall",
     caseStudy: { focus: "A character-led animated brand film for a pet-care concept.", approach: "A playful visual world shaped through animated scenes, a clear narrative progression and a polished final edit.", tags: ["AI Animation", "Brand Film", "Storytelling"] }
   },
   {
-    title: "Cheater Scanner", type: "AI UGC · TikTok Creative", file: "cheater-scanner.mp4", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/cheaterscanner%20v22.mp4", poster: "cheater-scanner.svg", size: "tall",
+    title: "Cheater Scanner", type: "AI UGC · TikTok Creative", file: "cheater-scanner.mp4", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/cheaterscanner%20v22.mp4", poster: "cheater-scanner.jpg", size: "tall",
     caseStudy: { focus: "Social-first advertising for an app-oriented service.", approach: "A vertical UGC format built around an immediate hook, a concise narrative and platform-native pacing.", tags: ["AI UGC", "TikTok", "App Advertising"] }
   },
   {
-    title: "Rumik AI", type: "AI UGC · App Advertising", file: "rumik.mp4", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/rumik%20ira.MP4", poster: "rumik.svg", size: "tall",
+    title: "Rumik AI", type: "AI UGC · App Advertising", file: "rumik.mp4", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/rumik%20ira.MP4", poster: "rumik.jpg", size: "tall",
     caseStudy: { focus: "Creator-led creative for an AI app.", approach: "Short-form storytelling that introduces the product in a familiar social format and keeps the message focused.", tags: ["AI UGC", "AI Apps", "Performance Creative"] }
   },
 ];
@@ -114,9 +114,9 @@ function Project({ p }: { p: PortfolioProject }) {
 }
 
 const showreelClips = [
-  { title: "Cannazo", type: "AI PRODUCT FILM", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/cannazo%20herovF.mp4", poster: "cannazo.svg" },
-  { title: "Pet Project", type: "AI ANIMATED BRAND FILM", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/pet%20project%20spa%20Animated.mp4", poster: "pet-project.svg" },
-  { title: "Cheater Scanner", type: "AI UGC / SOCIAL AD", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/cheaterscanner%20v22.mp4", poster: "cheater-scanner.svg" },
+  { title: "Cannazo", type: "AI PRODUCT FILM", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/cannazo%20herovF.mp4", poster: "cannazo.jpg" },
+  { title: "Pet Project", type: "AI ANIMATED BRAND FILM", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/pet%20project%20spa%20Animated.mp4", poster: "pet-project.jpg" },
+  { title: "Cheater Scanner", type: "AI UGC / SOCIAL AD", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/cheaterscanner%20v22.mp4", poster: "cheater-scanner.jpg" },
   { title: "Social Catfish", type: "AI UGC / SOCIAL AD", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/Social%20catfish%20v1.mov", poster: "social-catfish.svg" },
   { title: "TripSniper", type: "AI UGC / TRAVEL AD", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/Copy%20of%20Copy%20of%20Tripsniper%20AD%20Reel%204.mp4", poster: "tripsniper.svg" },
 ];
@@ -124,8 +124,80 @@ const showreelClips = [
 export default function Portfolio() {
   const [workFolderOpen, setWorkFolderOpen] = useState(false);
   const [projectFormOpen, setProjectFormOpen] = useState(false);
-  const [sparksCaught, setSparksCaught] = useState(0);
-  const [sparkPosition, setSparkPosition] = useState({ x: 78, y: 28 });
+  const [gameCells, setGameCells] = useState<Array<{ x: number; y: number; color: string }>>([]);
+  const [fallingBlock, setFallingBlock] = useState({ x: 3, y: 0, w: 2, color: "lime" });
+  const [gameScore, setGameScore] = useState(0);
+  const [gameOver, setGameOver] = useState(false);
+  const [gamePaused, setGamePaused] = useState(false);
+  const gameCellsRef = useRef(gameCells);
+  const fallingBlockRef = useRef(fallingBlock);
+  const gameOverRef = useRef(gameOver);
+  const gamePausedRef = useRef(gamePaused);
+  useEffect(() => { gameCellsRef.current = gameCells; }, [gameCells]);
+  useEffect(() => { fallingBlockRef.current = fallingBlock; }, [fallingBlock]);
+  useEffect(() => { gameOverRef.current = gameOver; }, [gameOver]);
+  useEffect(() => { gamePausedRef.current = gamePaused; }, [gamePaused]);
+
+  const spawnBlock = () => {
+    const w = 1 + Math.floor(Math.random() * 3);
+    const next = { x: Math.floor(Math.random() * (8 - w + 1)), y: 0, w, color: ["lime", "white", "violet"][Math.floor(Math.random() * 3)] };
+    const occupied = gameCellsRef.current.some((cell) => cell.y === 0 && cell.x >= next.x && cell.x < next.x + next.w);
+    fallingBlockRef.current = next;
+    setFallingBlock(next);
+    if (occupied) { gameOverRef.current = true; setGameOver(true); }
+  };
+  const tickBlock = () => {
+    if (gameOverRef.current || gamePausedRef.current) return;
+    const b = fallingBlockRef.current;
+    const cells = gameCellsRef.current;
+    const landing = b.y >= 9 || cells.some((cell) => cell.y === b.y + 1 && cell.x >= b.x && cell.x < b.x + b.w);
+    if (!landing) {
+      const next = { ...b, y: b.y + 1 };
+      fallingBlockRef.current = next; setFallingBlock(next); return;
+    }
+    const color = b.color;
+    const landed = [...cells, ...Array.from({ length: b.w }, (_, i) => ({ x: b.x + i, y: b.y, color }))];
+    const fullRows = Array.from({ length: 10 }, (_, y) => y).filter((y) => Array.from({ length: 8 }, (_, x) => x).every((x) => landed.some((cell) => cell.x === x && cell.y === y)));
+    let nextCells = landed;
+    if (fullRows.length) {
+      nextCells = landed.filter((cell) => !fullRows.includes(cell.y)).map((cell) => ({ ...cell, y: cell.y + fullRows.filter((row) => row > cell.y).length }));
+      setGameScore((s) => s + fullRows.length * 100);
+    } else setGameScore((s) => s + b.w * 10);
+    gameCellsRef.current = nextCells; setGameCells(nextCells);
+    spawnBlock();
+  };
+  const moveBlock = (direction: "left" | "right") => {
+    if (gameOverRef.current) return;
+    const b = fallingBlockRef.current;
+    const nx = direction === "left" ? b.x - 1 : b.x + 1;
+    if (nx < 0 || nx + b.w > 8) return;
+    if (gameCellsRef.current.some((cell) => cell.y === b.y && cell.x >= nx && cell.x < nx + b.w)) return;
+    const next = { ...b, x: nx }; fallingBlockRef.current = next; setFallingBlock(next);
+  };
+  const hardDrop = () => {
+    if (gameOverRef.current) return;
+    let b = fallingBlockRef.current;
+    while (b.y < 9 && !gameCellsRef.current.some((cell) => cell.y === b.y + 1 && cell.x >= b.x && cell.x < b.x + b.w)) b = { ...b, y: b.y + 1 };
+    fallingBlockRef.current = b; setFallingBlock(b); tickBlock();
+  };
+  const resetStackGame = () => {
+    const first = { x: 3, y: 0, w: 2, color: "lime" };
+    gameCellsRef.current = []; fallingBlockRef.current = first; gameOverRef.current = false; gamePausedRef.current = false;
+    setGameCells([]); setFallingBlock(first); setGameScore(0); setGameOver(false); setGamePaused(false);
+  };
+  useEffect(() => {
+    const timer = window.setInterval(tickBlock, 560);
+    const onKey = (event: KeyboardEvent) => {
+      if (!document.querySelector(".stack-game")?.contains(document.activeElement) && !(document.activeElement instanceof HTMLButtonElement && document.activeElement.closest(".stack-game"))) return;
+      if (["ArrowLeft", "ArrowRight", "ArrowDown", " "].includes(event.key)) event.preventDefault();
+      if (event.key === "ArrowLeft" || event.key.toLowerCase() === "a") moveBlock("left");
+      if (event.key === "ArrowRight" || event.key.toLowerCase() === "d") moveBlock("right");
+      if (event.key === "ArrowDown" || event.key.toLowerCase() === "s") tickBlock();
+      if (event.key === " " || event.key === "Enter") hardDrop();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => { window.clearInterval(timer); window.removeEventListener("keydown", onKey); };
+  }, []);
 
   useEffect(() => {
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -218,6 +290,7 @@ export default function Portfolio() {
 
   return (
     <main>
+      <div className="ambient-background" aria-hidden="true"><span className="ambient-orb ambient-orb--one"/><span className="ambient-orb ambient-orb--two"/><span className="ambient-orb ambient-orb--three"/><span className="ambient-grain"/></div>
       <div className="scroll-progress" aria-hidden="true" />
       <div className="cursor-trail" aria-hidden="true">
         {Array.from({ length: 5 }, (_, i) => <span className={`cursor-trail-dot cursor-trail-dot--${i + 1}`} key={i} />)}
@@ -247,29 +320,23 @@ export default function Portfolio() {
           <div className="hero-metric"><strong data-metric="years">1.5+</strong><small>years with AI</small></div>
           <div className="hero-metric"><strong data-metric="brands">15+</strong><small>brands &amp; clients</small></div>
         </div>
-        <div className="spark-playground" aria-label="Hidden mini game: Catch the Spark">
-          <div className="spark-playground-copy"><span>TAKE A BREAK</span><strong>Catch the spark.</strong><small>Catch five sparks to unlock a tiny surprise.</small></div>
-          {sparksCaught < 5 ? (
-            <button
-              type="button"
-              className="spark-target"
-              style={{ left: `${sparkPosition.x}%`, top: `${sparkPosition.y}%` }}
-              onClick={() => {
-                setSparksCaught((current) => Math.min(5, current + 1));
-                setSparkPosition((current) => ({
-                  x: [18, 72, 45, 84, 30, 60][(sparksCaught + 1) % 6],
-                  y: [30, 72, 18, 54, 82, 40][(sparksCaught + 2) % 6],
-                }));
-              }}
-              aria-label={`Catch spark, ${sparksCaught} of 5 caught`}
-              title="Catch the spark"
-            ><span aria-hidden="true">✳</span></button>
-          ) : (
-            <button type="button" className="spark-win" onClick={() => { setSparksCaught(0); setSparkPosition({ x: 78, y: 28 }); }}>
-              <span aria-hidden="true">✦</span><strong>Spark captured.</strong><small>Play again ↗</small>
-            </button>
-          )}
-          <span className="spark-score" aria-live="polite">{String(sparksCaught).padStart(2, "0")} <i>/ 05</i></span>
+        <div className="stack-game" tabIndex={0} aria-label="Stack Lab game. Use left and right arrows to move, down to speed up, and space to drop a block.">
+          <div className="stack-game-head"><div className="stack-game-copy"><span>INTERACTIVE BREAK</span><strong>Stack Lab<span>_</span></strong><small>Different sizes. One tiny platform. How high can you build?</small></div><div className="stack-score"><small>SCORE</small><strong>{String(gameScore).padStart(4, "0")}</strong></div></div>
+          <div className="stack-game-play">
+            <div className="stack-board" role="img" aria-label={`Stacking board, score ${gameScore}`}>
+              {Array.from({ length: 80 }, (_, i) => {
+                const x = i % 8; const y = Math.floor(i / 8);
+                const settled = gameCells.find((cell) => cell.x === x && cell.y === y);
+                const falling = fallingBlock.y === y && x >= fallingBlock.x && x < fallingBlock.x + fallingBlock.w;
+                const color = falling ? fallingBlock.color : settled?.color;
+                return <span key={i} className={`stack-cell ${color ? `is-${color}` : ""} ${falling ? "is-falling" : ""}`} />;
+              })}
+              {gameOver && <div className="stack-game-over"><strong>STACK OVER.</strong><span>Score: {gameScore}</span><button type="button" onClick={resetStackGame}>Try again ↻</button></div>}
+              {gamePaused && !gameOver && <div className="stack-game-over"><strong>PAUSED</strong><button type="button" onClick={() => setGamePaused(false)}>Resume</button></div>}
+            </div>
+            <div className="stack-game-side"><span className="stack-side-label">CONTROLS</span><div className="stack-control-hint"><kbd>←</kbd><kbd>→</kbd><span>Move</span></div><div className="stack-control-hint"><kbd>↓</kbd><span>Drop faster</span></div><div className="stack-control-hint"><kbd>SPACE</kbd><span>Hard drop</span></div><p>Fill a row to clear it and score bonus points.</p></div>
+          </div>
+          <div className="stack-game-controls"><button type="button" aria-label="Move block left" onClick={() => moveBlock("left")}>← <span>LEFT</span></button><button type="button" aria-label="Move block right" onClick={() => moveBlock("right")}>→ <span>RIGHT</span></button><button type="button" aria-label="Move block down" onClick={tickBlock}>↓ <span>DOWN</span></button><button type="button" aria-label="Drop block" onClick={hardDrop}>DROP <span>↧</span></button><button type="button" className="stack-reset" onClick={resetStackGame}>RESET ↻</button></div>
         </div>
       </section>
 
