@@ -11,7 +11,7 @@ type PortfolioProject = {
   title: string;
   type: string;
   file: string;
-  src?: string;
+  driveId?: string;
   poster?: string;
   size: "wide" | "tall";
   caseStudy?: CaseStudyDetails;
@@ -19,93 +19,125 @@ type PortfolioProject = {
 
 const projects: PortfolioProject[] = [
   {
-    title: "MoneyPilot", type: "AI UGC · Performance Advertising", file: "moneypilot.mp4", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/money%20pilot%20v43.mp4", poster: "moneypilot.svg", size: "tall",
+    title: "MoneyPilot", type: "AI UGC · Performance Advertising", file: "moneypilot.mp4", driveId: "11SPwSTkA1KkPESnO81PGGWQtqTfOvAKn", poster: "moneypilot.svg", size: "tall",
     caseStudy: { focus: "Performance-led financial product creative.", approach: "Creator-style short-form storytelling with a clear opening hook and concise product messaging.", tags: ["AI UGC", "Paid Social", "Hook-led Creative"] }
   },
   {
-    title: "Pet Project", type: "AI Animated Brand Film", file: "pet-project.mp4", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/pet%20project%20spa%20Animated.mp4", poster: "pet-project.svg", size: "tall",
+    title: "Pet Project", type: "AI Animated Brand Film", file: "pet-project.mp4", driveId: "1WLHVzz0cQByB4mVKBBLnbFGJmipx4weD", poster: "pet-project.svg", size: "tall",
     caseStudy: { focus: "A character-led animated brand film for a pet-care concept.", approach: "A playful visual world shaped through animated scenes, a clear narrative progression and a polished final edit.", tags: ["AI Animation", "Brand Film", "Storytelling"] }
   },
   {
-    title: "Cheater Scanner", type: "AI UGC · TikTok Creative", file: "cheater-scanner.mp4", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/cheaterscanner%20v22.mp4", poster: "cheater-scanner.svg", size: "tall",
+    title: "Cheater Scanner", type: "AI UGC · TikTok Creative", file: "cheater-scanner.mp4", driveId: "1WrRulgnGmmT-_do7waXJB5vBPbmzczwK", poster: "cheater-scanner.svg", size: "tall",
     caseStudy: { focus: "Social-first advertising for an app-oriented service.", approach: "A vertical UGC format built around an immediate hook, a concise narrative and platform-native pacing.", tags: ["AI UGC", "TikTok", "App Advertising"] }
   },
   {
-    title: "Rumik AI", type: "AI UGC · App Advertising", file: "rumik.mp4", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/rumik%20ira.MP4", poster: "rumik.svg", size: "tall",
+    title: "Rumik AI", type: "AI UGC · App Advertising", file: "rumik.mp4", driveId: "12tDyrvvbhtGMSSRdh2ocpgMJQkyTyEsg", poster: "rumik.svg", size: "tall",
     caseStudy: { focus: "Creator-led creative for an AI app.", approach: "Short-form storytelling that introduces the product in a familiar social format and keeps the message focused.", tags: ["AI UGC", "AI Apps", "Performance Creative"] }
   },
 ];
 
 const otherWorks: PortfolioProject[] = [
-  { title: "Adukale", type: "AI Product Advertisement", file: "adukale.mp4", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/Adukale%20Khara%20chakkli.mp4", poster: "adukale.svg", size: "wide" },
-  { title: "CardOutpost", type: "AI UGC · Social Creative", file: "cardoutpost.mp4", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/cardoutpost%202.mp4", poster: "cardoutpost.svg", size: "tall" },
-  { title: "MoneyPilot · Alternate Cut", type: "AI UGC · Alternate Creative", file: "moneypilot-v65.mp4", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/moneypilot%20v65.mp4", poster: "moneypilot-alt.svg", size: "tall" },
-  { title: "Cheater Scanner · Alternate Cut", type: "AI UGC · Alternate Creative", file: "cheaterscanner-alt.mp4", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/cheaterscanner.mp4", poster: "cheater-scanner-alt.svg", size: "tall" },
+  { title: "Adukale", type: "AI Product Advertisement", file: "adukale.mp4", driveId: "1ked_9FQePqzZfcdf9KFpBJQU58brrB4Z", poster: "adukale.svg", size: "wide" },
+  { title: "CardOutpost", type: "AI UGC · Social Creative", file: "cardoutpost.mp4", driveId: "1ZHcUuSf87pcYbcMDW23GUhbC10LJyCkk", poster: "cardoutpost.svg", size: "tall" },
+  { title: "MoneyPilot · Alternate Cut", type: "AI UGC · Alternate Creative", file: "moneypilot-v65.mp4", driveId: "1kIHi32-q40azqOlZmdrC2sLNIFJdLYPP", poster: "moneypilot-alt.svg", size: "tall" },
+  { title: "Cheater Scanner · Alternate Cut", type: "AI UGC · Alternate Creative", file: "cheaterscanner-alt.mp4", driveId: "1s_I0RRsVfI0X9bzi14HmFZ2jneSrl6JJ", poster: "cheater-scanner-alt.svg", size: "tall" },
+  { title: "TripSniper · Reel 1", type: "AI UGC · Travel Ad", file: "tripsniper-reel-1.mp4", driveId: "1FwLraGfuwc0TKTw9JHA4LZJeTALHMxBq", poster: "tripsniper-alt.svg", size: "tall" },
+  { title: "Cheater Scanner · v18 Cut", type: "AI UGC · Alternate Creative", file: "cheater-scanner-v18.mp4", driveId: "1QFbgBE1G7-EuggFSm7u0Y80ooUkgJYSX", poster: "cheater-scanner-v18.svg", size: "tall" },
 ];
 
+// Videos are hosted on Google Drive and shown in Drive's embedded player.
+// The player is only mounted after a visitor presses play, so the page itself loads no video data.
+const drivePreviewUrl = (id: string) => `https://drive.google.com/file/d/${id}/preview`;
+const ACTIVE_VIDEO_EVENT = "portfolio:active-video";
+// Thumbnail Google Drive generates from the video itself.
+const driveThumbnailUrl = (id: string) => `https://drive.google.com/thumbnail?id=${id}&sz=w720`;
+
+/** Real video thumbnail from Drive, falling back to the designed poster if Drive refuses to serve it. */
+function VideoThumbnail({ driveId, fallback, className, alt }: { driveId?: string; fallback?: string; className: string; alt: string }) {
+  const [useFallback, setUseFallback] = useState(!driveId);
+  const imgRef = useRef<HTMLImageElement>(null);
+  // The page is pre-rendered, so an image can fail before React attaches onError. Catch that case after mount.
+  useEffect(() => {
+    const img = imgRef.current;
+    if (img && img.complete && img.naturalWidth === 0) setUseFallback(true);
+  }, []);
+  const src = useFallback ? (fallback ? `/posters/${fallback}` : undefined) : driveThumbnailUrl(driveId as string);
+  if (!src) return null;
+  return (
+    <img
+      ref={imgRef}
+      className={className}
+      src={src}
+      alt={alt}
+      loading="lazy"
+      referrerPolicy="no-referrer"
+      onError={() => setUseFallback(true)}
+    />
+  );
+}
+
+/** Opens this card's player and closes any other open player (only one video plays at a time). */
+function useExclusivePlayer(key: string) {
+  const [isOpen, setIsOpen] = useState(false);
+  useEffect(() => {
+    const onActive = (event: Event) => {
+      if ((event as CustomEvent<string>).detail !== key) setIsOpen(false);
+    };
+    window.addEventListener(ACTIVE_VIDEO_EVENT, onActive);
+    return () => window.removeEventListener(ACTIVE_VIDEO_EVENT, onActive);
+  }, [key]);
+  const open = () => {
+    window.dispatchEvent(new CustomEvent(ACTIVE_VIDEO_EVENT, { detail: key }));
+    setIsOpen(true);
+  };
+  return { isOpen, open };
+}
+
 function Project({ p }: { p: PortfolioProject }) {
-  const ref = useRef<HTMLVideoElement>(null);
-  const [hasStarted, setHasStarted] = useState(false);
+  const playerKey = `project:${p.title}`;
+  const { isOpen, open } = useExclusivePlayer(playerKey);
   const [videoVisible, setVideoVisible] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [playError, setPlayError] = useState(false);
   const isCaseStudy = Boolean(p.caseStudy);
   const projectIndex = isCaseStudy ? String(projects.indexOf(p) + 1).padStart(2, "0") : "↗";
 
+  useEffect(() => { if (!isOpen) setVideoVisible(false); }, [isOpen]);
+
   const startPlayback = () => {
-    const video = ref.current;
-    if (!video || !p.src) return;
-    setPlayError(false);
-    setHasStarted(true);
-    video.controls = true;
-    if (video.getAttribute("src") !== p.src) video.src = p.src;
-    // A media element stuck in an error state never retries on play(); reload it first.
-    else if (video.error) video.load();
-    const attempt = video.play();
-    if (attempt && typeof attempt.catch === "function") {
-      attempt.catch((err: unknown) => {
-        // AbortError just means play() was interrupted (e.g. paused by another video), not a load failure.
-        if (err instanceof DOMException && err.name === "AbortError") return;
-        setIsPlaying(false);
-        setPlayError(true);
-      });
-    }
+    if (!p.driveId) return;
+    open();
   };
 
   return (
     <article className={`project project--${p.size} ${isCaseStudy ? "project--case-study" : ""}`}>
-      <div className={`project-media${videoVisible && !playError ? " is-video-visible" : ""}${isPlaying ? " is-playing" : ""}${playError ? " has-error" : ""}`}>
+      <div className={`project-media${videoVisible ? " is-video-visible" : ""}${isOpen ? " is-playing" : ""}`}>
         <div className="project-placeholder" aria-hidden="true">
           <span className="placeholder-kicker">AI FILM / SELECTED WORK</span>
           <strong>{p.title}</strong>
           <span className="placeholder-type">{p.type}</span>
           <span className="placeholder-mark">G<span>·</span></span>
         </div>
-        {p.poster && <img className="project-poster" src={`/posters/${p.poster}`} alt={`${p.title} video thumbnail`} loading="lazy" />}
-        <video
-          ref={ref}
-          data-video-src={p.src ?? `/videos/${p.file}`}
-          controls={hasStarted}
-          playsInline
-          preload="none"
-          aria-label={`${p.title} video. Use the video controls to play, pause, and adjust sound.`}
-          onLoadedData={() => { setVideoVisible(true); setPlayError(false); }}
-          onCanPlay={() => setPlayError(false)}
-          onPlaying={() => { setVideoVisible(true); setIsPlaying(true); setPlayError(false); }}
-          onPause={() => setIsPlaying(false)}
-          onError={() => { setIsPlaying(false); setVideoVisible(false); setPlayError(true); }}
-        />
+        <VideoThumbnail className="project-poster" driveId={p.driveId} fallback={p.poster} alt={`${p.title} video thumbnail`} />
+        {isOpen && p.driveId && (
+          <iframe
+            className="drive-player"
+            src={drivePreviewUrl(p.driveId)}
+            title={`${p.title} video`}
+            allow="autoplay; fullscreen; picture-in-picture"
+            allowFullScreen
+            onLoad={() => setVideoVisible(true)}
+          />
+        )}
         <div className="project-shade" aria-hidden="true" />
         <span className="project-type">{isCaseStudy ? "CASE STUDY" : "SELECTED WORK"}</span>
         <span className="project-index">{projectIndex}</span>
-        <div className={`project-title-overlay${isPlaying ? " is-hidden" : ""}`}>
+        <div className={`project-title-overlay${isOpen ? " is-hidden" : ""}`}>
           <span className="project-overlay-index">{isCaseStudy ? `FEATURED CASE STUDY · ${projectIndex}` : "MORE SELECTED WORK"}</span>
           <strong>{p.title}</strong>
           <span className="project-overlay-type">{p.type}</span>
-          <button className="project-center-play" type="button" onClick={startPlayback} aria-label={`${playError ? "Retry" : "Play"} ${p.title}`}>
-            <span aria-hidden="true">{playError ? "↻" : "▶"}</span>
+          <button className="project-center-play" type="button" onClick={startPlayback} aria-label={`Play ${p.title}`}>
+            <span aria-hidden="true">▶</span>
           </button>
-          <small className="project-play-label">{playError ? "COULDN’T LOAD · TRY AGAIN" : isPlaying ? "PAUSE FILM" : "PLAY FILM"}</small>
+          <small className="project-play-label">PLAY FILM</small>
         </div>
       </div>
       <div className="project-caption"><h3>{p.title}</h3><span>{isCaseStudy ? "Featured case study ↗" : "Selected work ↗"}</span></div>
@@ -120,68 +152,40 @@ function Project({ p }: { p: PortfolioProject }) {
   );
 }
 
-type ShowreelClip = { title: string; type: string; src: string; poster: string };
+type ShowreelClip = { title: string; type: string; driveId: string; poster: string };
 
 const showreelClips: ShowreelClip[] = [
-  { title: "Cannazo", type: "AI PRODUCT FILM", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/cannazo%20herovF.mp4", poster: "cannazo.svg" },
-  { title: "Pet Project", type: "AI ANIMATED BRAND FILM", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/pet%20project%20spa%20Animated.mp4", poster: "pet-project.svg" },
-  { title: "Cheater Scanner", type: "AI UGC / SOCIAL AD", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/cheaterscanner%20v22.mp4", poster: "cheater-scanner.svg" },
-  { title: "Social Catfish", type: "AI UGC / SOCIAL AD", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/Social%20catfish%20v1.mov", poster: "social-catfish.svg" },
-  { title: "TripSniper", type: "AI UGC / TRAVEL AD", src: "https://zmqzeztomyhvgfnk.public.blob.vercel-storage.com/showreel/Copy%20of%20Copy%20of%20Tripsniper%20AD%20Reel%204.mp4", poster: "tripsniper.svg" },
+  { title: "Cannazo", type: "AI PRODUCT FILM", driveId: "1a6iZZs6sEzmS0R0z5dS3HJ7Wfjgj7S76", poster: "cannazo.svg" },
+  { title: "Pet Project", type: "AI ANIMATED BRAND FILM", driveId: "1WLHVzz0cQByB4mVKBBLnbFGJmipx4weD", poster: "pet-project.svg" },
+  { title: "Cheater Scanner", type: "AI UGC / SOCIAL AD", driveId: "1WrRulgnGmmT-_do7waXJB5vBPbmzczwK", poster: "cheater-scanner.svg" },
+  { title: "Social Catfish", type: "AI UGC / SOCIAL AD", driveId: "148s5sBRapmuRhZ4KiQZDNSigw6c92XnR", poster: "social-catfish.svg" },
+  { title: "TripSniper", type: "AI UGC / TRAVEL AD", driveId: "1sKEpKdJe4aZiF-ODgf-dPYk5zo37i6tL", poster: "tripsniper.svg" },
 ];
 
 function ShowreelCard({ clip, index }: { clip: ShowreelClip; index: number }) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [playError, setPlayError] = useState(false);
-
-  const startPlayback = () => {
-    const video = videoRef.current;
-    if (!video) return;
-    setPlayError(false);
-    // A media element stuck in an error state never retries on play(); reload it first.
-    if (video.error) video.load();
-    const attempt = video.play();
-    if (attempt && typeof attempt.catch === "function") {
-      attempt.catch((err: unknown) => {
-        if (err instanceof DOMException && err.name === "AbortError") return;
-        setPlayError(true);
-      });
-    }
-  };
+  const { isOpen, open } = useExclusivePlayer(`showreel:${index}`);
 
   return (
     <article className="showreel-slide" key={clip.title}>
-      <div className={`showreel-video-frame${isPlaying ? " is-playing" : ""}${playError ? " has-error" : ""}`}>
-        <video
-          ref={videoRef}
-          className="showreel-video"
-          src={clip.src}
-          poster={`/posters/${clip.poster}`}
-          controls
-          playsInline
-          preload="none"
-          aria-label={`${clip.title} showreel clip. Use controls for playback and sound.`}
-          onLoadedData={() => setPlayError(false)}
-          onCanPlay={() => setPlayError(false)}
-          onError={() => { setIsPlaying(false); setPlayError(true); }}
-          onPlay={() => {
-            setIsPlaying(true);
-            setPlayError(false);
-            document.querySelectorAll<HTMLVideoElement>(".showreel-video").forEach((other) => {
-              if (other !== videoRef.current) other.pause();
-            });
-          }}
-          onPause={() => setIsPlaying(false)}
-        />
+      <div className={`showreel-video-frame${isOpen ? " is-playing" : ""}`}>
+        <VideoThumbnail className="showreel-poster" driveId={clip.driveId} fallback={clip.poster} alt={`${clip.title} video thumbnail`} />
+        {isOpen && (
+          <iframe
+            className="drive-player"
+            src={drivePreviewUrl(clip.driveId)}
+            title={`${clip.title} showreel clip`}
+            allow="autoplay; fullscreen; picture-in-picture"
+            allowFullScreen
+          />
+        )}
         <div className="showreel-title-overlay">
           <span className="showreel-overlay-index">{String(index + 1).padStart(2, "0")} / 05</span>
           <strong>{clip.title}</strong>
           <span className="showreel-overlay-type">{clip.type}</span>
-          <button className="showreel-center-play" type="button" onClick={startPlayback} aria-label={`Play ${clip.title}`}>
+          <button className="showreel-center-play" type="button" onClick={open} aria-label={`Play ${clip.title}`}>
             <span aria-hidden="true">▶</span>
           </button>
-          <small className="showreel-play-label">{playError ? "REEL COULD NOT LOAD · TRY AGAIN" : "PLAY FILM"}</small>
+          <small className="showreel-play-label">PLAY FILM</small>
         </div>
       </div>
     </article>
