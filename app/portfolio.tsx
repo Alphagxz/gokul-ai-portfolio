@@ -160,7 +160,7 @@ function ShowreelCard({ clip, index }: { clip: ShowreelClip; index: number }) {
           poster={`/posters/${clip.poster}`}
           controls
           playsInline
-          preload="metadata"
+          preload="none"
           aria-label={`${clip.title} showreel clip. Use controls for playback and sound.`}
           onLoadedData={() => setPlayError(false)}
           onCanPlay={() => setPlayError(false)}
