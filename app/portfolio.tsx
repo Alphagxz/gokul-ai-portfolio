@@ -58,10 +58,14 @@ function Project({ p }: { p: PortfolioProject }) {
     setPlayError(false);
     setHasStarted(true);
     video.controls = true;
-    if (!video.src || video.src !== p.src) video.src = p.src;
+    if (video.getAttribute("src") !== p.src) video.src = p.src;
+    // A media element stuck in an error state never retries on play(); reload it first.
+    else if (video.error) video.load();
     const attempt = video.play();
     if (attempt && typeof attempt.catch === "function") {
-      attempt.catch(() => {
+      attempt.catch((err: unknown) => {
+        // AbortError just means play() was interrupted (e.g. paused by another video), not a load failure.
+        if (err instanceof DOMException && err.name === "AbortError") return;
         setIsPlaying(false);
         setPlayError(true);
       });
@@ -77,7 +81,7 @@ function Project({ p }: { p: PortfolioProject }) {
           <span className="placeholder-type">{p.type}</span>
           <span className="placeholder-mark">G<span>·</span></span>
         </div>
-        {p.poster && <img className="project-poster" src={`/poster/${p.poster}`} alt={`${p.title} video thumbnail`} loading="lazy" />}
+        {p.poster && <img className="project-poster" src={`/posters/${p.poster}`} alt={`${p.title} video thumbnail`} loading="lazy" />}
         <video
           ref={ref}
           data-video-src={p.src ?? `/videos/${p.file}`}
@@ -135,9 +139,14 @@ function ShowreelCard({ clip, index }: { clip: ShowreelClip; index: number }) {
     const video = videoRef.current;
     if (!video) return;
     setPlayError(false);
+    // A media element stuck in an error state never retries on play(); reload it first.
+    if (video.error) video.load();
     const attempt = video.play();
     if (attempt && typeof attempt.catch === "function") {
-      attempt.catch(() => setPlayError(true));
+      attempt.catch((err: unknown) => {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        setPlayError(true);
+      });
     }
   };
 
@@ -148,7 +157,7 @@ function ShowreelCard({ clip, index }: { clip: ShowreelClip; index: number }) {
           ref={videoRef}
           className="showreel-video"
           src={clip.src}
-          poster={`/poster/${clip.poster}`}
+          poster={`/posters/${clip.poster}`}
           controls
           playsInline
           preload="metadata"
